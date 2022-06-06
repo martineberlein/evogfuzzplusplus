@@ -3,6 +3,14 @@ EvoGFuzz
 
 This repo contains EvoGFuzz and other tools for comparison.
 
+# How to setup EvoGFuzz?
+
+_EvoGFuzz++_ requires the tool `tribble`. It needs to be installed independently.
+
+```
+Setup Script will follow soon
+```
+
 # How to run EvoGFuzz?
 
 In general, you got to /evogfuzz and you call something like
