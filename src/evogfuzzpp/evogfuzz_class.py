@@ -7,6 +7,7 @@ from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.ProbabilisticGrammarFuzzer import is_valid_probabilistic_grammar, ProbabilisticGrammarMiner, ProbabilisticGrammarFuzzer
 
 from isla.language import DerivationTree
+from evogfuzzpp.tournament_selection import Tournament
 
 
 class EvoGFuzz:
@@ -16,11 +17,12 @@ class EvoGFuzz:
             grammar: Grammar,
             prop: Callable[[Union[DerivationTree, str]], bool],
             inputs: List[str],
+            fitness_function: Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]],
             working_dir: Path
     ):
         self.grammar = grammar
         self._prop = prop
-        self.initial_inputs = inputs
+        self.initial_inputs = set(inputs)
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Grammar] = []
         self._iteration: int = 0
@@ -32,7 +34,7 @@ class EvoGFuzz:
         self._tournament_number: int = 10
         self._all_data = None
         self._avg_prev_data = 0
-        self.fitness_function: Union[Callable[[Set[Tuple[str, bool]]], int], None] = None
+        self.fitness_function: Union[Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]], None] = fitness_function
 
     def execute(self):
         logging.info("Executing EvoGFuzz")
@@ -47,18 +49,20 @@ class EvoGFuzz:
         new_inputs = self._generate_input_files()
         # execute input files
         execution_outcome = self._execute_input_files(new_inputs)
+        data = set()
         for i in zip(new_inputs, execution_outcome):
             print(i)
+            data.add(i)
         # determine fitness of individuals
-        fitness = self._determine_fitness(execution_outcome)
+        fitness = self._determine_fitness(data)
         # select fittest individuals
-        fittest_individuals = self.__select_fittest_individuals(fitness)
+        fittest_individuals = self._select_fittest_individuals(fitness)
         # learn new probabilistic grammar
-        self.__learn_new_grammar(fittest_individuals)
+        self._learn_new_grammar(fittest_individuals)
         # mutate grammar
-        self.__check_mutation(fittest_individuals)
+        self._mutate_grammar()  # TODO Only mutate when no improvement
         # collect new data
-        self.__add_new_data(exec_data, fitness, fittest_individuals)
+        self._add_new_data(fittest_individuals)
         # display stats
         # self.__show_stats()
 
@@ -108,17 +112,21 @@ class EvoGFuzz:
 
         return exec_oracle
 
-    def _determine_fitness(self, data: Set[Tuple[str, bool]]):
+    def _determine_fitness(self, data: Set[Tuple[DerivationTree, bool]]):
         return self.fitness_function(data)
 
-    def __select_fittest_individuals(self, fitness):
+    def _select_fittest_individuals(self, data) -> Set[Tuple[DerivationTree, bool, float]]:
+        return Tournament(data, self._tournament_number).select_fittest_individuals()
+
+    def _learn_new_grammar(self, fittest_individuals):
         pass
 
-    def __learn_new_grammar(self, fittest_individuals):
+    def _mutate_grammar(self):
         pass
 
-    def __check_mutation(self, fittest_individuals):
-        pass
+    def _add_new_data(self, fittest_individuals):
+        if self._all_data is None:
+            self._all_data = fittest_individuals
+        else:
+            self._all_data.update(fittest_individuals)
 
-    def __add_new_data(self, exec_data, fitness, fittest_individuals):
-        pass
