@@ -1,5 +1,5 @@
 def main():
-    print("Hello World")
+    print("CLI not supported yet! Coming soon!")
 
 
 if __name__ == '__main__':
