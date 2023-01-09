@@ -1,9 +1,9 @@
 EvoGFuzz
 =======
 
-This repo contains EvoGFuzz and other tools for comparison.
+This repo contains the code to execute, develop and test our grammar-based fuzzing tool **EvoGFuzz**.
 
-## Install, Development, Testing
+## Install, Development, Testing, Build
 
 ### Install
 If all external dependencies are available, a simple pip install evogfuzz suffices.
@@ -38,6 +38,24 @@ pip install -e .[dev]
 python3 -m pytest
 ```
 
+### Build
+
+EvoGFuzz is build locally as follows:
+
+```
+git clone https://github.com/martineberlein/evogfuzz.git
+cd evogfuzz/
+
+python3.10 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install --upgrade build
+python3 -m build
+```
+
+Then, you will find the built wheel (*.whl) in the dist/ directory.
+
 # How to setup EvoGFuzz?
 
 _EvoGFuzz++_ requires the tool `tribble`. It needs to be installed independently.
@@ -48,7 +66,6 @@ Setup Script will follow soon
 
 # How to run EvoGFuzz?
 
-In general, you got to /evogfuzz and you call something like
 
 ```
 python3 evogfuzz.py --output <out_dir> --target <subject_driver>
@@ -59,7 +76,7 @@ where
 * `<subject_driver>` is a python file which contains a ``execute_samples()`` method,
   which returns the driver object for the program under test.
 
-The ``subject_driver`` for existing subjects can be found in the subfolders of the subjects/ folder.
+The ``subject_driver`` for existing subjects can be found in the folders of the subjects/ folder.
 If you e.g. want to run Rhino you would invoke
 
 ```
@@ -73,7 +90,7 @@ python3 evogfuzz.py --output ../results --target ../subjects/Rhino/subject_drive
 
 # Requirements
 
-In order to run EvoGFuzzm, the ANTLR parser generator (Version 4.7.1) is required.
+In order to run EvoGFuzz, the ANTLR parser generator (Version 4.7.1) is required.
 Additionally, the class path for antlr4 needs to be exported.
 
 ```
