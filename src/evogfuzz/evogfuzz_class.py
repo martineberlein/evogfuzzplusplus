@@ -7,8 +7,15 @@ from enum import Enum
 from copy import deepcopy
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser, DerivationTree
-from fuzzingbook.ProbabilisticGrammarFuzzer import is_valid_probabilistic_grammar, ProbabilisticGrammarMiner, ProbabilisticGrammarFuzzer
+from fuzzingbook.Parser import (
+    EarleyParser,
+    DerivationTree
+)
+from fuzzingbook.ProbabilisticGrammarFuzzer import (
+    is_valid_probabilistic_grammar,
+    ProbabilisticGrammarMiner,
+    ProbabilisticGrammarFuzzer
+)
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
@@ -51,13 +58,22 @@ class EvoGFuzz:
         self._probabilistic_grammar_miner = None
 
     def execute(self):
-        logging.info("Executing EvoGFuzz")
+        logging.info("Fuzzing with EvoGFuzz")
         self.initialize()
         while self._do_more_iterations():
             logging.info(f"Starting iteration {self._iteration}")
             self._loop()
             self._iteration = self._iteration + 1
         self._finalize()
+
+    def optimize(self) -> Grammar:
+        logging.info("Optimizing with EvoGFuzz")
+        self.initialize()
+        while self._do_more_iterations():
+            logging.info("Starting to optimize probabilities")
+
+        # Return best Grammar
+        return Grammar
 
     def _loop(self):
         # generate input files

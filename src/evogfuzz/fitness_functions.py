@@ -16,3 +16,4 @@ def get_fitness(inp: Tuple[DerivationTree, bool]) -> int:
         return 1
     else:
         return 0
+    
