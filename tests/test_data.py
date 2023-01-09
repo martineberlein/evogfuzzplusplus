@@ -1,0 +1,50 @@
+import string
+import math
+from fuzzingbook.Grammars import Grammar
+from fuzzingbook.Parser import DerivationTree
+
+from typing import Tuple, Set
+
+
+def fitness_function(data: Set[Tuple[DerivationTree, bool]]) -> Set[Tuple[DerivationTree, bool, float]]:
+    fitness_data = set()
+    for inp in data:
+        fitness = get_fitness(inp)
+        fitness_data.add((inp[0], inp[1], fitness))
+
+    return fitness_data
+
+
+def get_fitness(inp: Tuple[DerivationTree, bool]) -> int:
+    if inp[1]:
+        return 1
+    else:
+        return 0
+
+
+GRAMMAR: Grammar = {
+    "<start>": ["<arith_expr>"],
+    "<arith_expr>": ["<function>(<number>)"],
+    "<function>": ["sqrt", "sin", "cos", "tan"],
+    "<number>": ["<maybe_minus><onenine><maybe_digits><maybe_frac>"],
+    "<maybe_minus>": ["", "-"],
+    "<onenine>": [str(num) for num in range(1, 10)],
+    "<digit>": list(string.digits),
+    "<maybe_digits>": ["", "<digits>"],
+    "<digits>": ["<digit>", "<digit><digits>"],
+    "<maybe_frac>": ["", ".<digits>"]
+}
+
+INITIAL_INPUTS = ['cos(10)', 'sqrt(28367)', 'tan(-12)', 'sqrt(3)']
+
+
+def arith_eval(inp: DerivationTree) -> float:
+    return eval(str(inp), {"sqrt": math.sqrt, "sin": math.sin, "cos": math.cos, "tan": math.tan})
+
+
+def prop(inp: DerivationTree) -> bool:
+    try:
+        arith_eval(inp)
+        return False
+    except ValueError:
+        return True

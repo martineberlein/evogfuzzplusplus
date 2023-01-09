@@ -1,0 +1,3 @@
+recursive-include notebooks *.ipynb
+recursive-include tests *.py
+exclude grammars

@@ -3,11 +3,10 @@ from typing import Callable, List, Union, Set, Tuple
 from pathlib import Path
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
+from fuzzingbook.Parser import EarleyParser, DerivationTree
 from fuzzingbook.ProbabilisticGrammarFuzzer import is_valid_probabilistic_grammar, ProbabilisticGrammarMiner, ProbabilisticGrammarFuzzer
 
-from isla.language import DerivationTree
-from evogfuzzpp.tournament_selection import Tournament
+from evogfuzz.tournament_selection import Tournament
 
 
 class EvoGFuzz:
@@ -18,7 +17,7 @@ class EvoGFuzz:
             prop: Callable[[Union[DerivationTree, str]], bool],
             inputs: List[str],
             fitness_function: Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]],
-            working_dir: Path
+            working_dir: Path = None
     ):
         self.grammar = grammar
         self._prop = prop
@@ -26,7 +25,7 @@ class EvoGFuzz:
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Grammar] = []
         self._iteration: int = 0
-        self._max_iterations: int = 100
+        self._max_iterations: int = 10
         self._number_individuals: int = 100
         self._parameter_lambda: float = 2
         self._elitism_rate: int = 5
@@ -35,6 +34,7 @@ class EvoGFuzz:
         self._all_data = None
         self._avg_prev_data = 0
         self.fitness_function: Union[Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]], None] = fitness_function
+        self._probabilistic_grammar_miner = None
 
     def execute(self):
         logging.info("Executing EvoGFuzz")
@@ -43,6 +43,7 @@ class EvoGFuzz:
             logging.info(f"Starting iteration {self._iteration}")
             self._loop()
             self._iteration = self._iteration + 1
+        self._finalize()
 
     def _loop(self):
         # generate input files
@@ -51,7 +52,6 @@ class EvoGFuzz:
         execution_outcome = self._execute_input_files(new_inputs)
         data = set()
         for i in zip(new_inputs, execution_outcome):
-            print(i)
             data.add(i)
         # determine fitness of individuals
         fitness = self._determine_fitness(data)
@@ -73,9 +73,9 @@ class EvoGFuzz:
         positive_data: Set[Tuple[str, bool]] = {inp for inp in data if inp[1] is True}
         positive_inputs: List[str] = [inp[0] for inp in positive_data]
 
-        probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
             EarleyParser(self.grammar))
-        probabilistic_grammar = probabilistic_grammar_miner.mine_probabilistic_grammar(positive_inputs)
+        probabilistic_grammar = self._probabilistic_grammar_miner.mine_probabilistic_grammar(positive_inputs)
 
         logging.debug("Learned probabilistic grammar:")
         for rule in probabilistic_grammar:
@@ -107,7 +107,6 @@ class EvoGFuzz:
 
         exec_oracle = []
         for inp in input_samples:
-            print(inp)
             exec_oracle.append(self._prop(inp))
 
         return exec_oracle
@@ -119,9 +118,19 @@ class EvoGFuzz:
         return Tournament(data, self._tournament_number).select_fittest_individuals()
 
     def _learn_new_grammar(self, fittest_individuals):
-        pass
+        logging.info("Learning new Grammar")
+
+        # Unpacking input samples
+        input_samples = (x[0] for x in fittest_individuals)
+
+        new_probabilistic_grammar = self._probabilistic_grammar_miner.mine_probabilistic_grammar(input_samples)
+        assert is_valid_probabilistic_grammar(new_probabilistic_grammar), "Exit! Newly generated Grammar is not valid!"
+
+        self._probabilistic_grammars.append(new_probabilistic_grammar)
+
 
     def _mutate_grammar(self):
+        logging.info("Mutating new Grammar")
         pass
 
     def _add_new_data(self, fittest_individuals):
@@ -129,4 +138,10 @@ class EvoGFuzz:
             self._all_data = fittest_individuals
         else:
             self._all_data.update(fittest_individuals)
+
+    def _finalize(self):
+        logging.info("Exiting EvoGFuzz!")
+        logging.info("Final Grammar:")
+        for rule in self._probabilistic_grammars[-1]:
+            logging.info(rule.ljust(30) + str(self._probabilistic_grammars[-1][rule]))
 
