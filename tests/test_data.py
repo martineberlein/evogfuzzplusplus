@@ -6,22 +6,6 @@ from fuzzingbook.Parser import DerivationTree
 from typing import Tuple, Set
 
 
-def fitness_function(data: Set[Tuple[DerivationTree, bool]]) -> Set[Tuple[DerivationTree, bool, float]]:
-    fitness_data = set()
-    for inp in data:
-        fitness = get_fitness(inp)
-        fitness_data.add((inp[0], inp[1], fitness))
-
-    return fitness_data
-
-
-def get_fitness(inp: Tuple[DerivationTree, bool]) -> int:
-    if inp[1]:
-        return 1
-    else:
-        return 0
-
-
 GRAMMAR: Grammar = {
     "<start>": ["<arith_expr>"],
     "<arith_expr>": ["<function>(<number>)"],

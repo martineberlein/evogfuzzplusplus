@@ -34,7 +34,7 @@ source venv/bin/activate
 pip install --upgrade pip
 
 # Run tests
-pip install -e .[dev,test]
+pip install -e .[dev]
 python3 -m pytest
 ```
 
