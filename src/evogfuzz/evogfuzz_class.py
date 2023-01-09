@@ -1,12 +1,24 @@
 import logging
 from typing import Callable, List, Union, Set, Tuple
 from pathlib import Path
+from random import choice
+import numpy as np
+from enum import Enum
+from copy import deepcopy
 
 from fuzzingbook.Grammars import Grammar
 from fuzzingbook.Parser import EarleyParser, DerivationTree
 from fuzzingbook.ProbabilisticGrammarFuzzer import is_valid_probabilistic_grammar, ProbabilisticGrammarMiner, ProbabilisticGrammarFuzzer
 
 from evogfuzz.tournament_selection import Tournament
+
+
+class GrammarType(Enum):
+    MUTATED = "mutated"
+    LEARNED = "learned"
+
+    def __str__(self):
+        return self.value
 
 
 class EvoGFuzz:
@@ -17,15 +29,16 @@ class EvoGFuzz:
             prop: Callable[[Union[DerivationTree, str]], bool],
             inputs: List[str],
             fitness_function: Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]],
+            iterations: int = 10,
             working_dir: Path = None
     ):
         self.grammar = grammar
         self._prop = prop
         self.initial_inputs = set(inputs)
         self.working_dir = working_dir
-        self._probabilistic_grammars: List[Grammar] = []
+        self._probabilistic_grammars: List[Tuple[Grammar, GrammarType]] = []
         self._iteration: int = 0
-        self._max_iterations: int = 10
+        self._max_iterations: int = iterations
         self._number_individuals: int = 100
         self._parameter_lambda: float = 2
         self._elitism_rate: int = 5
@@ -81,7 +94,9 @@ class EvoGFuzz:
         for rule in probabilistic_grammar:
             logging.debug(rule.ljust(40) + str(probabilistic_grammar[rule]))
 
-        self._probabilistic_grammars.append(probabilistic_grammar)
+        self._probabilistic_grammars.append(
+            (probabilistic_grammar, GrammarType.LEARNED)
+        )
 
         assert is_valid_probabilistic_grammar(probabilistic_grammar)
 
@@ -94,7 +109,8 @@ class EvoGFuzz:
         return True
 
     def _generate_input_files(self):
-        probabilistic_fuzzer = ProbabilisticGrammarFuzzer(self._probabilistic_grammars[-1])
+        grammar = self._get_latest_grammar()
+        probabilistic_fuzzer = ProbabilisticGrammarFuzzer(grammar)
         new_inputs = set()
         for _ in range(self._number_individuals):
             new_inputs.add(probabilistic_fuzzer.fuzz())
@@ -126,11 +142,32 @@ class EvoGFuzz:
         new_probabilistic_grammar = self._probabilistic_grammar_miner.mine_probabilistic_grammar(input_samples)
         assert is_valid_probabilistic_grammar(new_probabilistic_grammar), "Exit! Newly generated Grammar is not valid!"
 
-        self._probabilistic_grammars.append(new_probabilistic_grammar)
-
+        self._probabilistic_grammars.append(
+            (new_probabilistic_grammar, GrammarType.LEARNED)
+        )
 
     def _mutate_grammar(self):
         logging.info("Mutating new Grammar")
+
+        mutated_grammar = deepcopy(self._get_latest_grammar())
+
+        # if prev_avg < avg_fitness*1.025 -> Mutate
+        filtered = list(filter(lambda x: len(mutated_grammar[x]) > 1, list(mutated_grammar)))
+        selected = choice(filtered)
+        logging.info(f"Selected rule {selected} to be mutated.")
+        new_probs = np.random.random(size=len(mutated_grammar[selected]))
+        new_probs /= new_probs.sum()
+
+        for count, child in enumerate(mutated_grammar[selected]):
+            child[1]['prob'] = list(new_probs)[count]
+
+        for rule in mutated_grammar:
+            logging.info(rule.ljust(30) + str(mutated_grammar[rule]))
+
+        self._probabilistic_grammars.append(
+            (mutated_grammar, GrammarType.MUTATED)
+        )
+
         pass
 
     def _add_new_data(self, fittest_individuals):
@@ -142,6 +179,12 @@ class EvoGFuzz:
     def _finalize(self):
         logging.info("Exiting EvoGFuzz!")
         logging.info("Final Grammar:")
-        for rule in self._probabilistic_grammars[-1]:
-            logging.info(rule.ljust(30) + str(self._probabilistic_grammars[-1][rule]))
+
+        final_grammar = self._get_latest_grammar()
+
+        for rule in final_grammar:
+            logging.info(rule.ljust(30) + str(final_grammar[rule]))
+
+    def _get_latest_grammar(self):
+        return self._probabilistic_grammars[-1][0]
 
