@@ -96,7 +96,7 @@ class EvoGFuzz:
             logging.debug(rule.ljust(40) + str(probabilistic_grammar[rule]))
 
         self._probabilistic_grammars.append(
-            (probabilistic_grammar, GrammarType.LEARNED)
+            (deepcopy(probabilistic_grammar), GrammarType.LEARNED)
         )
 
         assert is_valid_probabilistic_grammar(probabilistic_grammar)
@@ -138,13 +138,16 @@ class EvoGFuzz:
         logging.info("Learning new Grammar")
 
         # Unpacking input samples
-        input_samples = (x[0] for x in fittest_individuals)
+        input_samples = list(x[0] for x in fittest_individuals)
+        logging.info(input_samples)
 
-        new_probabilistic_grammar = self._probabilistic_grammar_miner.mine_probabilistic_grammar(input_samples)
+        probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+            EarleyParser(self.grammar))
+        new_probabilistic_grammar = probabilistic_grammar_miner.mine_probabilistic_grammar(input_samples)
         assert is_valid_probabilistic_grammar(new_probabilistic_grammar), "Exit! Newly generated Grammar is not valid!"
 
         self._probabilistic_grammars.append(
-            (new_probabilistic_grammar, GrammarType.LEARNED)
+            (deepcopy(new_probabilistic_grammar), GrammarType.LEARNED)
         )
 
     def _mutate_grammar(self):
