@@ -11,6 +11,7 @@ from fuzzingbook.Parser import EarleyParser, DerivationTree
 from fuzzingbook.ProbabilisticGrammarFuzzer import is_valid_probabilistic_grammar, ProbabilisticGrammarMiner, ProbabilisticGrammarFuzzer
 
 from evogfuzz.tournament_selection import Tournament
+from evogfuzz.fitness_functions import fitness_function_failure
 
 
 class GrammarType(Enum):
@@ -28,7 +29,7 @@ class EvoGFuzz:
             grammar: Grammar,
             prop: Callable[[Union[DerivationTree, str]], bool],
             inputs: List[str],
-            fitness_function: Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]],
+            fitness_function: Callable[[Set[Tuple[DerivationTree, bool]]], Set[Tuple[DerivationTree, bool, float]]] = fitness_function_failure,
             iterations: int = 10,
             working_dir: Path = None
     ):
