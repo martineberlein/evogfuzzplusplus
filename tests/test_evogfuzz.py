@@ -1,7 +1,7 @@
 import unittest
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
-from test_data import GRAMMAR, INITIAL_INPUTS, prop
+from evogfuzz_formalizations.calculator import GRAMMAR, INITIAL_INPUTS, prop
 from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
 
