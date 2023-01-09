@@ -3,6 +3,41 @@ EvoGFuzz
 
 This repo contains EvoGFuzz and other tools for comparison.
 
+## Install, Development, Testing
+
+### Install
+If all external dependencies are available, a simple pip install evogfuzz suffices.
+We recommend installing EvoGFuzz inside a virtual environment (virtualenv):
+
+```
+python3.10 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install evogfuzz
+```
+
+Now, the evogfuzz command should be available on the command line within the virtual environment.
+
+### Development and Testing
+
+For development, we recommend using EvoGFuzz inside a virtual environment (virtualenv).
+By thing the following steps in a standard shell (bash), one can run the EvoGFuzz tests:
+
+```
+git clone https://github.com/martineberlein/evogfuzz.git
+cd evogfuzz/
+
+python3.10 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+
+# Run tests
+pip install -e .[dev,test]
+python3 -m pytest
+```
+
 # How to setup EvoGFuzz?
 
 _EvoGFuzz++_ requires the tool `tribble`. It needs to be installed independently.
