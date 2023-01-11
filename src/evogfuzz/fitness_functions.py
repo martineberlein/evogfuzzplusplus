@@ -2,7 +2,9 @@ from typing import Tuple, Set
 from fuzzingbook.Parser import DerivationTree
 
 
-def fitness_function_failure(data: Set[Tuple[DerivationTree, bool]]) -> Set[Tuple[DerivationTree, bool, float]]:
+def fitness_function_failure(
+    data: Set[Tuple[DerivationTree, bool]]
+) -> Set[Tuple[DerivationTree, bool, float]]:
     fitness_data = set()
     for inp in data:
         fitness = get_fitness(inp)
@@ -16,4 +18,3 @@ def get_fitness(inp: Tuple[DerivationTree, bool]) -> int:
         return 1
     else:
         return 0
-    

@@ -3,12 +3,15 @@ from operator import itemgetter
 
 
 class Tournament:
-
-    def __init__(self, fitness_data: Set[Tuple[str, bool, float]],
-                 tournament_rounds: int = 10,
-                 tournament_size: int = 10
-                 ):
-        self._fitness_data = fitness_data # sorted(fitness_data,key=itemgetter(1), reverse=True)
+    def __init__(
+        self,
+        fitness_data: Set[Tuple[str, bool, float]],
+        tournament_rounds: int = 10,
+        tournament_size: int = 10,
+    ):
+        self._fitness_data = (
+            fitness_data  # sorted(fitness_data,key=itemgetter(1), reverse=True)
+        )
         self._tournament_rounds = tournament_rounds
         self._tournament_size = tournament_size
 

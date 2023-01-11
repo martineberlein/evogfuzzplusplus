@@ -14,15 +14,17 @@ GRAMMAR: Grammar = {
     "<digit>": list(string.digits),
     "<maybe_digits>": ["", "<digits>"],
     "<digits>": ["<digit>", "<digit><digits>"],
-    "<maybe_frac>": ["", ".<digits>"]
+    "<maybe_frac>": ["", ".<digits>"],
 }
 
 
-INITIAL_INPUTS = ['cos(10)', 'sqrt(28367)', 'tan(-12)', 'sqrt(3)']
+INITIAL_INPUTS = ["cos(10)", "sqrt(28367)", "tan(-12)", "sqrt(3)"]
 
 
 def _arith_eval(inp: DerivationTree) -> float:
-    return eval(str(inp), {"sqrt": math.sqrt, "sin": math.sin, "cos": math.cos, "tan": math.tan})
+    return eval(
+        str(inp), {"sqrt": math.sqrt, "sin": math.sin, "cos": math.cos, "tan": math.tan}
+    )
 
 
 def prop(inp: DerivationTree) -> bool:
