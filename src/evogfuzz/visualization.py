@@ -46,15 +46,13 @@ def parse_prob_grammars(grammar_list: List[Grammar]) -> Dict[str, List[float]]:
     return probabilities
 
 
-def _mathlib_plot(grammar_list):
-    xvals = [i for i in range(len(grammar_list))]
-
+def _mathlib_plot(x_values, grammar_list):
     f, ax = plt.subplots(1)
 
     feature_disp = ["<function>->cos", "<function>->sqrt", "<maybe_minus>->-"]
 
     for feature in feature_disp:
-        ax.plot(xvals, grammar_list[feature])
+        ax.plot(x_values, grammar_list[feature])
 
 
 def plot(grammar_list: Union[List[Tuple[Grammar, GrammarType, float]], List[Grammar]]):
@@ -62,8 +60,9 @@ def plot(grammar_list: Union[List[Tuple[Grammar, GrammarType, float]], List[Gram
     if isinstance(grammar_list[0], tuple):
         grammar_list = [grammar_tuple[0] for grammar_tuple in grammar_list]
 
+    x_values = [i for i in range(len(grammar_list))]
     prob_dict = parse_prob_grammars(grammar_list)
-    _mathlib_plot(prob_dict)
+    _mathlib_plot(x_values, prob_dict)
 
 
 if __name__ == "__main__":
