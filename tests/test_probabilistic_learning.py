@@ -1,15 +1,14 @@
 import unittest
+from evogfuzz.helper import patch
 
-from fuzzingbook.Parser import EarleyParser, is_valid_grammar, tree_to_string
-from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner, expansion_key
-
-from evogfuzz import helper
+from fuzzingbook.Parser import EarleyParser, is_valid_grammar, tree_to_string, Grammar
+from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner
 
 
 class TestProbabilisticLearner(unittest.TestCase):
     def setUp(self) -> None:
-        helper.patch()
-        self.grammar = {
+        patch()
+        self.grammar: Grammar = {
             "<start>": ["<maybe_minus><number>"],
             "<maybe_minus>": ["", "-"],
             "<number>": ["1", "2", "3"],
@@ -42,6 +41,3 @@ class TestProbabilisticLearner(unittest.TestCase):
 
         for rule in probabilistic_grammar:
             print(rule.ljust(30) + str(probabilistic_grammar[rule]))
-
-    def test_expansion_keys(self):
-        pass

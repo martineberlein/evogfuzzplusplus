@@ -5,6 +5,10 @@ import sys
 from distutils.sysconfig import get_python_lib
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from importlib import reload
+
+from fuzzingbook import ProbabilisticGrammarFuzzer
+from fuzzingbook import GrammarCoverageFuzzer
 
 PATCH_ERROR = -3
 
@@ -26,7 +30,7 @@ PATCH = b"""
 """
 
 
-def patch() -> None:
+def patch():
     site_packages = get_python_lib()
     grammar_coverage_fuzzer = (
         Path(site_packages) / "fuzzingbook" / "GrammarCoverageFuzzer.py"
@@ -51,6 +55,11 @@ def patch() -> None:
         if process.returncode:
             logging.error("Patching fuzzingbook.GrammarCoverageFuzzer did not work")
             sys.exit(PATCH_ERROR)
+
+        # Reload patched modules
+        reload(GrammarCoverageFuzzer)
+        # Reload patched modules
+        reload(ProbabilisticGrammarFuzzer)
 
 
 if __name__ == "__main__":
