@@ -1,3 +1,6 @@
+[![Tests](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml/badge.svg)](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml)
+&nbsp;
+
 EvoGFuzz
 =======
 
