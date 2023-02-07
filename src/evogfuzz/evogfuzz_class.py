@@ -16,6 +16,7 @@ from fuzzingbook.ProbabilisticGrammarFuzzer import (
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
+from evogfuzz import helper
 
 
 class GrammarType(Enum):
@@ -60,6 +61,9 @@ class EvoGFuzz:
             None,
         ] = fitness_function
         self._probabilistic_grammar_miner = None
+
+        # Apply patch to fuzzingbook
+        helper.patch()
 
     def execute(self):
         logging.info("Fuzzing with EvoGFuzz")
@@ -242,3 +246,4 @@ class EvoGFuzz:
 
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
+

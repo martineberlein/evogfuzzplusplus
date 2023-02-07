@@ -3,9 +3,12 @@ import unittest
 from fuzzingbook.Parser import EarleyParser, is_valid_grammar, tree_to_string
 from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner, expansion_key
 
+from evogfuzz import helper
+
 
 class TestProbabilisticLearner(unittest.TestCase):
     def setUp(self) -> None:
+        helper.patch()
         self.grammar = {
             "<start>": ["<maybe_minus><number>"],
             "<maybe_minus>": ["", "-"],
