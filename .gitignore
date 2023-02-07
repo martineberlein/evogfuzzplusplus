@@ -234,3 +234,4 @@ TSWLatexianTemp*
 *venv
 *.idea
 *__pycache__
+/src/evogfuzz.egg-info/
