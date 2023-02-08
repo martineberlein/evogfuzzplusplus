@@ -1,4 +1,6 @@
+import sys
 import unittest
+import platform
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
 from evogfuzz_formalizations.calculator import GRAMMAR, INITIAL_INPUTS, prop
@@ -6,6 +8,8 @@ from evogfuzz.fitness_functions import fitness_function_failure as fitness_funct
 
 
 class TestEvoGFuzz(unittest.TestCase):
+    def test_python_version(self):
+        self.assertTrue(sys.version_info >= (3, 10), "Python version does not match the minimum requirement!")
 
     def test_evogfuzz_initialize(self):
         evogfuzz = EvoGFuzz(
