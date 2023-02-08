@@ -4,7 +4,8 @@
 EvoGFuzz
 =======
 
-This repo contains the code to execute, develop and test our grammar-based fuzzing tool **EvoGFuzz**.
+This repo contains the code to execute, develop and test our grammar-based fuzzing tool **EvoGFuzz**,
+which was first described in our paper _Evolutionary Grammar-Based Fuzzing_ accepted at [SSBSE'2020](http://ssbse2020.di.uniba.it/).
 
 **Example**
 
