@@ -3,7 +3,7 @@ import unittest
 import platform
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
-from evogfuzz_formalizations.calculator import GRAMMAR, INITIAL_INPUTS, prop
+from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, initial_inputs, prop
 from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
 
@@ -13,12 +13,12 @@ class TestEvoGFuzz(unittest.TestCase):
 
     def test_evogfuzz_initialize(self):
         evogfuzz = EvoGFuzz(
-            grammar=GRAMMAR,
-            inputs=INITIAL_INPUTS,
+            grammar=grammar,
+            inputs=initial_inputs,
             prop=prop,
             fitness_function=fitness_function,
         )
-        evogfuzz.initialize()
+        evogfuzz.setup()
 
     def test_something(self):
         self.assertEqual(True, True)  # add assertion here
