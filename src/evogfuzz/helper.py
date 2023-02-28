@@ -1,6 +1,8 @@
+import os.path
 import subprocess
 import logging
 import sys
+from typing import List
 
 from distutils.sysconfig import get_python_lib
 from pathlib import Path
@@ -39,12 +41,11 @@ def patch():
     patch_file = NamedTemporaryFile(suffix=".patch")
     patch_file.write(PATCH)
     patch_file.seek(0)
+
     cmd = ["patch", str(grammar_coverage_fuzzer.absolute()), str(patch_file.name)]
 
-    # dry run
-    dry_run = subprocess.run(
-        cmd + ["--dry-run"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    cmd_dry_run = cmd + ["--dry-run"]
+    dry_run = run_cmd(cmd_dry_run)
 
     if b"patch detected" not in dry_run.stdout:
         process = subprocess.run(
@@ -60,6 +61,17 @@ def patch():
         reload(GrammarCoverageFuzzer)
         # Reload patched modules
         reload(ProbabilisticGrammarFuzzer)
+
+
+def run_cmd(cmd: List, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+    try:
+        return subprocess.run(
+            cmd, stdout=stdout, stderr=stderr
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error(e)
+        logging.error(f"Can't execute command {cmd}!")
+        sys.exit(PATCH_ERROR)
 
 
 if __name__ == "__main__":

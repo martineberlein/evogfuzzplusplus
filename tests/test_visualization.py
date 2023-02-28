@@ -1,7 +1,7 @@
 import unittest
 
 from evogfuzz import EvoGFuzz
-from evogfuzz_formalizations.calculator import GRAMMAR, INITIAL_INPUTS, prop
+from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, initial_inputs, prop
 from evogfuzz.visualization import parse_prob_grammars, plot
 
 ITERATIONS = 3
@@ -11,12 +11,12 @@ class TestEvoGFuzzVisualization(unittest.TestCase):
     def setUp(self) -> None:
 
         self.evogfuzz = EvoGFuzz(
-            grammar=GRAMMAR,
-            inputs=INITIAL_INPUTS,
+            grammar=grammar,
+            inputs=initial_inputs,
             prop=prop,
             iterations=ITERATIONS,
         )
-        self.evogfuzz.execute()
+        self.evogfuzz.fuzz()
         self.all_prob_grammars = self.evogfuzz._probabilistic_grammars
         assert len(self.all_prob_grammars) == ITERATIONS * 2 + 1
 
@@ -66,4 +66,4 @@ class TestEvoGFuzzVisualization(unittest.TestCase):
             assert len(res[expansion_key]) == ITERATIONS * 2 + 1
 
     def test_visualization_plot(self):
-        res = plot(self.all_prob_grammars)
+        plot(self.all_prob_grammars)

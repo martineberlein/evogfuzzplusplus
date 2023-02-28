@@ -1,27 +1,29 @@
-from typing import Set, Tuple
-from operator import itemgetter
+from typing import Set, List
+
+from evogfuzz.input import Input
 
 
 class Tournament:
     def __init__(
         self,
-        fitness_data: Set[Tuple[str, bool, float]],
+        test_inputs: Set[Input],
         tournament_rounds: int = 10,
         tournament_size: int = 10,
     ):
-        self._fitness_data = (
-            fitness_data  # sorted(fitness_data,key=itemgetter(1), reverse=True)
-        )
-        self._tournament_rounds = tournament_rounds
-        self._tournament_size = tournament_size
+        self.test_inputs: Set[Input] = test_inputs
+        self.tournament_rounds: int = tournament_rounds
+        self.tournament_size: int = tournament_size
 
     def select_fittest_individuals(self):
-        fittest = set()
+        assert self.tournament_size*self.tournament_rounds == len(self.test_inputs)
 
-        for _ in range(self._tournament_rounds):
-            f = list(self._fitness_data)[:10]
-            fi = sorted(f, key=itemgetter(1), reverse=True)[0]
+        fittest: Set[Input] = set()
+
+        for _ in range(self.tournament_rounds):
+            current_round: List[Input] = list(self.test_inputs)[:self.tournament_size]
+            for inp in current_round:
+                self.test_inputs.remove(inp)
+            fi = sorted(current_round, key=lambda inp: inp.fitness, reverse=False).pop()
             fittest.add(fi)
-            self._fitness_data.remove(fi)
 
         return fittest

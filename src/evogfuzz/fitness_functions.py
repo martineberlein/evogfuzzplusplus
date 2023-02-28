@@ -1,20 +1,16 @@
-from typing import Tuple, Set
-from fuzzingbook.Parser import DerivationTree
+from evogfuzz.input import Input
+from evogfuzz.oracle import OracleResult
 
 
 def fitness_function_failure(
-    data: Set[Tuple[DerivationTree, bool]]
-) -> Set[Tuple[DerivationTree, bool, float]]:
-    fitness_data = set()
-    for inp in data:
-        fitness = get_fitness(inp)
-        fitness_data.add((inp[0], inp[1], fitness))
+    test_input: Input
+) -> float:
 
-    return fitness_data
+    return get_fitness(test_input)
 
 
-def get_fitness(inp: Tuple[DerivationTree, bool]) -> int:
-    if inp[1]:
+def get_fitness(test_input: Input) -> int:
+    if test_input.oracle == OracleResult.BUG:
         return 1
     else:
         return 0
