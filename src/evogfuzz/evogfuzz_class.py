@@ -201,7 +201,7 @@ class EvoGFuzz:
             filter(lambda x: len(mutated_grammar[x]) > 1, list(mutated_grammar))
         )
         selected = choice(filtered)
-        logging.info(f"Selected rule {selected} to be mutated.")
+        logging.debug(f"Selected rule {selected} to be mutated.")
         new_probs = np.random.random(size=len(mutated_grammar[selected]))
         new_probs /= new_probs.sum()
 
@@ -209,7 +209,7 @@ class EvoGFuzz:
             child[1]["prob"] = list(new_probs)[count]
 
         for rule in mutated_grammar:
-            logging.info(rule.ljust(30) + str(mutated_grammar[rule]))
+            logging.debug(rule.ljust(30) + str(mutated_grammar[rule]))
 
         return mutated_grammar
 
