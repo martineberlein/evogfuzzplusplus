@@ -36,9 +36,7 @@ class EvoGFuzz:
         grammar: Grammar,
         prop: Callable[[Union[Input, str]], OracleResult],
         inputs: List[str],
-        fitness_function: Callable[
-            [Input], float
-        ] = fitness_function_failure,
+        fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
         working_dir: Path = None,
     ):
@@ -80,9 +78,14 @@ class EvoGFuzz:
         # Apply patch to fuzzingbook
         helper.patch()
 
-    def setup(self):
+    def setup(self, optimize: bool = False):
         for inp in self.inputs:
             inp.oracle = self._prop(inp)
+
+        if optimize:
+            assert next(
+                True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
+            ), "EvoGFuzz needs at least one bug-triggering input."
 
         probabilistic_grammar = self._learn_probabilistic_grammar(self.inputs)
         self._probabilistic_grammars.append(
@@ -103,8 +106,20 @@ class EvoGFuzz:
 
     def optimize(self) -> Grammar:
         logging.info("Optimizing with EvoGFuzz")
+        new_population: Set[Input] = self.setup(optimize=True)
+
+        """
+        1. check failure (BUG!), Done
+        2. reproduce failure (BUG Class)
+        3. fitness function -> has prop to create diverse failing inputs
+        4. Only learn from behavior triggering inputs? 
+        5.  
+        """
+
         while self._do_more_iterations():
             logging.info("Starting to optimize probabilities")
+            new_population = self._loop(new_population)
+            self._iteration = self._iteration + 1
 
         # Return best Grammar
         return Grammar
@@ -147,21 +162,19 @@ class EvoGFuzz:
         probabilistic_fuzzer = ProbabilisticGrammarFuzzer(probabilistic_grammar)
         new_test_inputs = set()
         for _ in range(self._number_individuals):
-            new_test_inputs.add(Input(
-                DerivationTree.from_parse_tree(probabilistic_fuzzer.fuzz_tree())
-                )
+            new_test_inputs.add(
+                Input(DerivationTree.from_parse_tree(probabilistic_fuzzer.fuzz_tree()))
             )
         return new_test_inputs
 
     def _safe_fitness_for_grammar(self, sum_fitness: float):
-        grammar_tuple: Tuple[Grammar, GrammarType, float] = self._probabilistic_grammars.pop()
+        grammar_tuple: Tuple[
+            Grammar, GrammarType, float
+        ] = self._probabilistic_grammars.pop()
         grammar, grammar_type, _ = grammar_tuple
         self._probabilistic_grammars.append((grammar, grammar_type, sum_fitness))
 
-    def _select_fittest_individuals(
-        self, test_inputs: Set[Input]
-    ) -> Set[Input]:
-
+    def _select_fittest_individuals(self, test_inputs: Set[Input]) -> Set[Input]:
         fittest_individuals = Tournament(
             test_inputs, self._tournament_number
         ).select_fittest_individuals()
