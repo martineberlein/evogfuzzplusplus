@@ -15,8 +15,7 @@ class MyTestCase(unittest.TestCase):
         )
 
         result = evo.optimize()
-
-        self.assertEqual(True, False)  # add assertion here
+        print(result)
 
 
 if __name__ == '__main__':

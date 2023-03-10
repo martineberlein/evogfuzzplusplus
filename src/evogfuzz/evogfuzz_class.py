@@ -81,9 +81,10 @@ class EvoGFuzz:
     def setup(self, optimize: bool = False):
         for inp in self.inputs:
             inp.oracle = self._prop(inp)
+            print(inp.oracle)
 
         if optimize:
-            assert next(
+            assert True in set(
                 True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
             ), "EvoGFuzz needs at least one bug-triggering input."
 
@@ -122,7 +123,7 @@ class EvoGFuzz:
             self._iteration = self._iteration + 1
 
         # Return best Grammar
-        return Grammar
+        return self._get_latest_grammar()
 
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
