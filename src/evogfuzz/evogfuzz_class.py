@@ -61,6 +61,9 @@ class EvoGFuzz:
             None,
         ] = fitness_function
 
+        # Fuzzing
+        self.found_exceptions = set()
+
         self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
             EarleyParser(self.grammar)
         )
@@ -81,7 +84,6 @@ class EvoGFuzz:
     def setup(self, optimize: bool = False):
         for inp in self.inputs:
             inp.oracle = self._prop(inp)
-            print(inp.oracle)
 
         if optimize:
             assert True in set(
@@ -104,6 +106,7 @@ class EvoGFuzz:
             new_population = self._loop(new_population)
             self._iteration = self._iteration + 1
         self._finalize()
+        return self.found_exceptions
 
     def optimize(self) -> Grammar:
         logging.info("Optimizing with EvoGFuzz")
@@ -128,7 +131,10 @@ class EvoGFuzz:
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
         for inp in test_inputs:
-            inp.oracle = self._prop(inp)
+            label = self._prop(inp)
+            if label == OracleResult.BUG:
+                self.found_exceptions.add(inp)
+            inp.oracle = label
 
         # determine fitness of individuals
         for inp in test_inputs:
