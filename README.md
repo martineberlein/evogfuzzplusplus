@@ -150,7 +150,15 @@ We see that all generated inputs now trigger the failure of the calculator.
 
 ### Install
 If all external dependencies are available, a simple pip install evogfuzz suffices.
-We recommend installing EvoGFuzz inside a virtual environment (virtualenv):
+We recommend installing EvoGFuzz inside a virtual environment (virtualenv), commands differ slightly for MacOS/Linux and Windows users:
+
+<table>
+<tr>
+<th style="font-weight: normal;">MacOS/Linux</th>
+<th style="font-weight: normal;">Windows</th>
+</tr>
+<tr>
+<td>
 
 ```
 python3.10 -m venv venv
@@ -159,6 +167,19 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install evogfuzz
 ```
+</td>
+<td>
+
+```
+python3.10 -m venv venv
+source venv/Scripts/activate
+
+python.exe -m pip install --upgrade pip
+pip install evogfuzz
+```
+</td>
+</tr>
+</table>
 
 Now, the evogfuzz command should be available on the command line within the virtual environment.
 
@@ -167,9 +188,17 @@ Now, the evogfuzz command should be available on the command line within the vir
 For development, we recommend using EvoGFuzz inside a virtual environment (virtualenv).
 By thing the following steps in a standard shell (bash), one can run the EvoGFuzz tests:
 
+<table>
+<tr>
+<th style="font-weight: normal;">MacOS/Linux</th>
+<th style="font-weight: normal;">Windows</th>
+</tr>
+<tr>
+<td>
+
 ```
-git clone https://github.com/martineberlein/evogfuzz.git
-cd evogfuzz/
+git clone https://github.com/martineberlein/evogfuzzplusplus.git
+cd evogfuzzplusplus/
 
 python3.10 -m venv venv
 source venv/bin/activate
@@ -180,13 +209,41 @@ pip install --upgrade pip
 pip install -e .[dev]
 python3 -m pytest
 ```
+</td>
+<td>
+
+```
+git clone https://github.com/martineberlein/evogfuzzplusplus.git
+cd evogfuzzplusplus/
+
+python3.10 -m venv venv
+source venv/Scripts/activate
+
+python.exe -m pip install --upgrade pip
+
+# Run tests
+pip install -e .[dev]
+python3 -m pytest
+```
+</td>
+</tr>
+</table>
+
 
 ### Build
 
 EvoGFuzz is build locally as follows:
 
+<table>
+<tr>
+<th style="font-weight: normal;">MacOS/Linux</th>
+<th style="font-weight: normal;">Windows</th>
+</tr>
+<tr>
+<td>
+
 ```
-git clone https://github.com/martineberlein/evogfuzz.git
+git clone https://github.com/martineberlein/evogfuzzplusplus.git
 cd evogfuzz/
 
 python3.10 -m venv venv
@@ -196,6 +253,24 @@ pip install --upgrade pip
 pip install --upgrade build
 python3 -m build
 ```
+</td>
+<td>
+
+```
+git clone https://github.com/martineberlein/evogfuzzplusplus.git
+cd evogfuzz/
+
+python3.10 -m venv venv
+source venv/Scripts/activate
+
+python.exe -m pip install --upgrade pip
+pip install --upgrade build
+python3 -m build
+```
+</td>
+</tr>
+</table>
+
 
 Then, you will find the built wheel (*.whl) in the dist/ directory.
 
