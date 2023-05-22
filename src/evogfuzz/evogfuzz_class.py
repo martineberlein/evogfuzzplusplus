@@ -250,18 +250,6 @@ class EvoGGen(EvoGFrame):
 
     failure_inducing_inputs: Set[Input] = set()
 
-    def generator_setup(self):
-        inputs = [str(inp) for inp in self.inputs]
-        self.grammar = transform_grammar_with_strings(inputs, self.grammar)
-        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
-            EarleyParser(self.grammar)
-        )
-
-        self.inputs = set()
-        for inp in inputs:
-            for tree in EarleyParser(self.grammar).parse(inp):
-                self.inputs.add(Input(DerivationTree.from_parse_tree(tree)))
-
     def setup(self):
         for inp in self.inputs:
             inp.oracle = self._prop(inp)
