@@ -20,6 +20,7 @@ from evogfuzz.fitness_functions import fitness_function_failure
 from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
+from evogfuzz.grammar_transformation import transform_grammar_with_strings
 
 
 class GrammarType(Enum):
@@ -49,8 +50,8 @@ class EvoGFuzz:
         self._number_individuals: int = 100
         self._parameter_lambda: float = 2
         self._elitism_rate: int = 5
-        self._tournament_size: int = 10
-        self._tournament_number: int = 10
+        self._tournament_size: int = 4
+        self._tournament_number: int = 25
         self._all_inputs = None
         self._avg_prev_data = 0
         self.fitness_function: Union[
@@ -98,6 +99,24 @@ class EvoGFuzz:
 
         return initial_population
 
+    def generator_setup(self):
+        inputs = [str(inp) for inp in self.inputs]
+        self.grammar = transform_grammar_with_strings(inputs, self.grammar)
+        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+            EarleyParser(self.grammar)
+        )
+
+        self.inputs = set()
+        for inp in inputs:
+            for tree in EarleyParser(self.grammar).parse(inp):
+                self.inputs.add(
+                    Input(
+                        DerivationTree.from_parse_tree(
+                            tree
+                        )
+                    )
+                )
+
     def fuzz(self):
         logging.info("Fuzzing with EvoGFuzz")
         new_population: Set[Input] = self.setup()
@@ -110,6 +129,7 @@ class EvoGFuzz:
 
     def optimize(self) -> Grammar:
         logging.info("Optimizing with EvoGFuzz")
+        # self.generator_setup()
         new_population: Set[Input] = self.setup(optimize=True)
 
         """
@@ -183,7 +203,7 @@ class EvoGFuzz:
 
     def _select_fittest_individuals(self, test_inputs: Set[Input]) -> Set[Input]:
         fittest_individuals = Tournament(
-            test_inputs, self._tournament_number
+            test_inputs, self._tournament_number, self._tournament_size
         ).select_fittest_individuals()
 
         sum_fitness = sum([inp.fitness for inp in fittest_individuals])
