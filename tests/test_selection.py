@@ -26,6 +26,18 @@ class TournamentSelection(unittest.TestCase):
         for inp in selected:
             print(inp, inp.oracle, inp.fitness)
 
+    def test_range_selection(self):
+        initial = [0, 1, 9, 16, 25, 36, 64]
+        selected = initial[:100]
+
+        try:
+            initial = []
+            fittest = set()
+            fi = sorted(initial, key=lambda inp: inp.fitness, reverse=False).pop()
+            fittest.add(fi)
+        except IndexError:
+            pass
+
 
 if __name__ == '__main__':
     unittest.main()
