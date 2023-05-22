@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Union
 import matplotlib.pyplot as plt
 
-from evogfuzz.evogfuzz_class import GrammarType
+from evogfuzz.types import GrammarType
 from evogfuzz.type_defs import Grammar
 
 
