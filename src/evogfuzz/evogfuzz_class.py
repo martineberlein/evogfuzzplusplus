@@ -3,7 +3,6 @@ from typing import Callable, List, Union, Set, Tuple
 from pathlib import Path
 from random import choice
 import numpy as np
-from enum import Enum
 from copy import deepcopy
 
 from fuzzingbook.Grammars import Grammar
@@ -21,17 +20,10 @@ from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.grammar_transformation import transform_grammar_with_strings
+from evogfuzz.types import GrammarType, Scenario
 
 
-class GrammarType(Enum):
-    MUTATED = "mutated"
-    LEARNED = "learned"
-
-    def __str__(self):
-        return self.value
-
-
-class EvoGFuzz:
+class EvoGFrame:
     def __init__(
         self,
         grammar: Grammar,
@@ -116,37 +108,6 @@ class EvoGFuzz:
                         )
                     )
                 )
-
-    def fuzz(self):
-        logging.info("Fuzzing with EvoGFuzz")
-        new_population: Set[Input] = self.setup()
-        while self._do_more_iterations():
-            logging.info(f"Starting iteration {self._iteration}")
-            new_population = self._loop(new_population)
-            self._iteration = self._iteration + 1
-        self._finalize()
-        return self.found_exceptions
-
-    def optimize(self) -> Grammar:
-        logging.info("Optimizing with EvoGFuzz")
-        # self.generator_setup()
-        new_population: Set[Input] = self.setup(optimize=True)
-
-        """
-        1. check failure (BUG!), Done
-        2. reproduce failure (BUG Class)
-        3. fitness function -> has prop to create diverse failing inputs
-        4. Only learn from behavior triggering inputs? 
-        5.  
-        """
-
-        while self._do_more_iterations():
-            logging.info("Starting to optimize probabilities")
-            new_population = self._loop(new_population)
-            self._iteration = self._iteration + 1
-
-        # Return best Grammar
-        return self._get_latest_grammar()
 
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
@@ -264,3 +225,50 @@ class EvoGFuzz:
 
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
+
+
+class EvoGFuzz(EvoGFrame):
+    """
+    This is the classic EvoGFuzz - the original grammar-based fuzzer!
+    """
+    def fuzz(self):
+        logging.info("Fuzzing with EvoGFuzz")
+        new_population: Set[Input] = self.setup()
+
+        while self._do_more_iterations():
+            logging.info(f"Starting iteration {self._iteration}")
+            new_population = self._loop(new_population)
+            self._iteration = self._iteration + 1
+
+        self._finalize()
+
+        return self.found_exceptions
+
+
+class EvoGGen(EvoGFrame):
+    """
+    This is EvoGGen - a new extension to EvoGFuzz. EvoGGen is used to learn the properties of a given failure by
+    learning a probabilistic grammar that will reproduce the defect efficiently.
+    """
+
+    def optimize(self) -> Grammar:
+        logging.info("Optimizing with EvoGFuzz")
+
+        # self.generator_setup()
+        new_population: Set[Input] = self.setup(optimize=True)
+
+        """
+        1. check failure (BUG!), Done
+        2. reproduce failure (BUG Class)
+        3. fitness function -> has prop to create diverse failing inputs
+        4. Only learn from behavior triggering inputs? 
+        5.  
+        """
+
+        while self._do_more_iterations():
+            logging.info("Starting to optimize probabilities")
+            new_population = self._loop(new_population)
+            self._iteration = self._iteration + 1
+
+        # Return best Grammar
+        return self._get_latest_grammar()
