@@ -12,9 +12,17 @@ from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 
 def oracle(inp: Input) -> OracleResult:
-    # Do Something
+    def your_program(test_input: str):
+        # Run your Program with the input
+        raise NotImplementedError
     
-    return OracleResult.NO_BUG
+    try:
+        your_program(str(inp))
+        # If you program does not raise an Exception everything seems fine
+        return OracleResult.NO_BUG
+    except NotImplementedError as e:
+        return OracleResult.BUG
+    return OracleResult.UNDEF
 ```
 
 ## Defining a Grammar
