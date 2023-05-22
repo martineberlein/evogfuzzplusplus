@@ -18,7 +18,7 @@ class TestEvoGFuzz(unittest.TestCase):
             prop=prop,
             fitness_function=fitness_function,
         )
-        evogfuzz.setup()
+        evogfuzz._setup()
 
     def test_something(self):
         self.assertEqual(True, True)  # add assertion here
