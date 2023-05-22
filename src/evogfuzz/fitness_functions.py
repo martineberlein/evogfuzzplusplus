@@ -2,9 +2,7 @@ from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 
 
-def fitness_function_failure(
-    test_input: Input
-) -> float:
+def fitness_function_failure(test_input: Input) -> float:
 
     return get_fitness(test_input)
 

@@ -54,9 +54,8 @@ def transform_grammar_with_strings(test_inputs: List[str], grammar: Grammar) -> 
 
 
 def _add_dummy_rule(grammar: Grammar):
-    tmp = grammar['<start>']
-    grammar['<start>'] = ['<rules>']
-    grammar['<rules>'] = tmp
+    tmp = grammar["<start>"]
+    grammar["<start>"] = ["<rules>"]
+    grammar["<rules>"] = tmp
 
     return grammar
-

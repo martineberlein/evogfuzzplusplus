@@ -23,10 +23,14 @@ class Tournament:
 
         try:
             for _ in range(self.tournament_rounds):
-                current_round: List[Input] = list(self.test_inputs)[:self.tournament_size]
+                current_round: List[Input] = list(self.test_inputs)[
+                    : self.tournament_size
+                ]
                 for inp in current_round:
                     self.test_inputs.remove(inp)
-                fi = sorted(current_round, key=lambda inp: inp.fitness, reverse=False).pop()
+                fi = sorted(
+                    current_round, key=lambda inp: inp.fitness, reverse=False
+                ).pop()
                 fittest.add(fi)
         except IndexError:
             logging.debug("Tournament Size too big! No more Inputs left to select!")
