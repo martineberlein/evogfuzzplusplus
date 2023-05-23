@@ -2,7 +2,7 @@ import unittest
 from typing import Tuple
 
 from isla.derivation_tree import DerivationTree
-from fuzzingbook.Parser import EarleyParser
+from fuzzingbook.Parser import EarleyParser, is_valid_grammar, Grammar
 
 from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, prop
 from evogfuzz.oracle import OracleResult
@@ -48,6 +48,29 @@ class TestInputs(unittest.TestCase):
     def test_input_execution(self):
         for inp in self.test_inputs:
             inp.oracle = prop(inp)
+
+    def test_hash(self):
+        grammar: Grammar = {
+            "<start>": ["<number>"],
+            "<number>": ["<maybe_minus><one_nine>"],
+            "<maybe_minus>": ["-", ""],
+            "<one_nine>": [str(i) for i in range(1, 10)],
+        }
+        assert is_valid_grammar(grammar=grammar)
+
+        initial_test_inputs = ["-8", "-8"]
+
+        test_inputs = set()
+        for inp in initial_test_inputs:
+            test_inputs.add(
+                Input(
+                    DerivationTree.from_parse_tree(
+                        next(EarleyParser(grammar).parse(inp))
+                    )
+                )
+            )
+
+        self.assertEqual(1, len(test_inputs))
 
 
 if __name__ == "__main__":

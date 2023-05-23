@@ -1,3 +1,4 @@
+import logging
 from typing import Set, List
 
 from evogfuzz.input import Input
@@ -15,15 +16,23 @@ class Tournament:
         self.tournament_size: int = tournament_size
 
     def select_fittest_individuals(self):
-        assert self.tournament_size*self.tournament_rounds == len(self.test_inputs)
+        # print(len(self.test_inputs), self.tournament_rounds)
+        # assert self.tournament_rounds < len(self.test_inputs)
 
         fittest: Set[Input] = set()
 
-        for _ in range(self.tournament_rounds):
-            current_round: List[Input] = list(self.test_inputs)[:self.tournament_size]
-            for inp in current_round:
-                self.test_inputs.remove(inp)
-            fi = sorted(current_round, key=lambda inp: inp.fitness, reverse=False).pop()
-            fittest.add(fi)
+        try:
+            for _ in range(self.tournament_rounds):
+                current_round: List[Input] = list(self.test_inputs)[
+                    : self.tournament_size
+                ]
+                for inp in current_round:
+                    self.test_inputs.remove(inp)
+                fi = sorted(
+                    current_round, key=lambda inp: inp.fitness, reverse=False
+                ).pop()
+                fittest.add(fi)
+        except IndexError:
+            logging.debug("Tournament Size too big! No more Inputs left to select!")
 
         return fittest

@@ -63,11 +63,11 @@ def patch():
         reload(ProbabilisticGrammarFuzzer)
 
 
-def run_cmd(cmd: List, stdout = subprocess.PIPE, stderr = subprocess.PIPE) -> subprocess.CompletedProcess:
+def run_cmd(
+    cmd: List, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(
-            cmd, stdout=stdout, stderr=stderr
-        )
+        return subprocess.run(cmd, stdout=stdout, stderr=stderr)
     except subprocess.CalledProcessError as e:
         logging.error(e)
         logging.error(f"Can't execute command {cmd}!")
