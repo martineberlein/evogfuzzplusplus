@@ -8,11 +8,8 @@ from evogfuzz.evogfuzz_class import EvoGGen
 from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 
-# from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, initial_inputs, prop
-from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
-
-def prop(inp: Input | str):
+def oracle(inp: Input | str):
     def subject_program(inp_):
         if eval(str(inp_)) <= -8:
             return True
@@ -41,8 +38,8 @@ class MyTestCase(unittest.TestCase):
             for tree in parser.parse(inp):
                 assert inp == tree_to_string(tree=tree)
 
-        assert prop(self.initial_inputs[0]) == OracleResult.BUG
-        assert prop(self.initial_inputs[1]) == OracleResult.NO_BUG
+        assert oracle(self.initial_inputs[0]) == OracleResult.BUG
+        assert oracle(self.initial_inputs[1]) == OracleResult.NO_BUG
 
     def test_evogfuzz_generator(self):
         expected_grammar: Grammar = {
@@ -63,7 +60,7 @@ class MyTestCase(unittest.TestCase):
         }
 
         evo = EvoGGen(
-            grammar=self.grammar, inputs=self.initial_inputs, oracle=prop, iterations=10
+            grammar=self.grammar, inputs=self.initial_inputs, oracle=oracle, iterations=10
         )
 
         generator_grammar, failing_inputs = evo.optimize()
