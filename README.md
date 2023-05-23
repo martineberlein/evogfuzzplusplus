@@ -79,7 +79,7 @@ from evogfuzz.fitness_functions import fitness_function_failure as fitness_funct
 
 epp = EvoGFuzz(
     grammar=grammar,
-    prop=prop,
+    oracle=prop,
     inputs=inputs,
 )
 

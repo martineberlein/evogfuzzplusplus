@@ -43,12 +43,7 @@ class TestGrammarTransformation(unittest.TestCase):
 
         p = EarleyParser(transformed_grammar)
         for tree in p.parse(inp):
-            n.add(
-                Input(
-                    DerivationTree.from_parse_tree(
-                        tree)
-                    )
-                )
+            n.add(Input(DerivationTree.from_parse_tree(tree)))
 
         self.assertTrue(len(n) == 22)
 

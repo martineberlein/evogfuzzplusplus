@@ -26,7 +26,6 @@ def prop(inp: Input | str):
 
 
 class MyTestCase(unittest.TestCase):
-
     def setUp(self) -> None:
         self.grammar: Grammar = {
             "<start>": ["<number>"],
@@ -47,32 +46,30 @@ class MyTestCase(unittest.TestCase):
 
     def test_evogfuzz_generator(self):
         expected_grammar: Grammar = {
-            '<start>': [('<number>', {'prob': None})],
-            '<number>': [('<maybe_minus><one_nine>', {'prob': None})],
-            '<maybe_minus>': [('-', {'prob': 1}),
-                              ('', {'prob': 0})],
-            '<one_nine>': [('1', {'prob': 0.0}),
-                           ('2', {'prob': 0.0}),
-                           ('3', {'prob': 0.0}),
-                           ('4', {'prob': 0.0}),
-                           ('5', {'prob': 0.0}),
-                           ('6', {'prob': 0.0}),
-                           ('7', {'prob': 0.0}),
-                           ('8', {'prob': 0.5}),
-                           ('9', {'prob': 0.5})],
+            "<start>": [("<number>", {"prob": None})],
+            "<number>": [("<maybe_minus><one_nine>", {"prob": None})],
+            "<maybe_minus>": [("-", {"prob": 1}), ("", {"prob": 0})],
+            "<one_nine>": [
+                ("1", {"prob": 0.0}),
+                ("2", {"prob": 0.0}),
+                ("3", {"prob": 0.0}),
+                ("4", {"prob": 0.0}),
+                ("5", {"prob": 0.0}),
+                ("6", {"prob": 0.0}),
+                ("7", {"prob": 0.0}),
+                ("8", {"prob": 0.5}),
+                ("9", {"prob": 0.5}),
+            ],
         }
 
         evo = EvoGGen(
-            grammar=self.grammar,
-            inputs=self.initial_inputs,
-            prop=prop,
-            iterations=10
+            grammar=self.grammar, inputs=self.initial_inputs, oracle=prop, iterations=10
         )
 
         generator_grammar, failing_inputs = evo.optimize()
         self.assertEqual(generator_grammar, expected_grammar)
-        self.assertEqual(failing_inputs, {'-8', '-9'})
+        self.assertEqual(failing_inputs, {"-8", "-9"})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

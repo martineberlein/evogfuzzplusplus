@@ -13,9 +13,7 @@ class TournamentSelection(unittest.TestCase):
         fuzzer = GrammarFuzzer(grammar)
         test_inputs = set()
         for idx, _ in enumerate(range(100)):
-            inp = Input(
-                DerivationTree.from_parse_tree(fuzzer.fuzz_tree())
-            )
+            inp = Input(DerivationTree.from_parse_tree(fuzzer.fuzz_tree()))
             inp.fitness = idx
             test_inputs.add(inp)
         for inp in test_inputs:
@@ -39,5 +37,5 @@ class TournamentSelection(unittest.TestCase):
             pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,6 @@ from evogfuzz.fitness_functions import fitness_function_failure
 from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
-from evogfuzz.grammar_transformation import transform_grammar_with_strings
 from evogfuzz.types import GrammarType, Scenario
 
 
@@ -29,14 +28,14 @@ class EvoGFrame:
     def __init__(
         self,
         grammar: Grammar,
-        prop: Callable[[Union[Input, str]], OracleResult],
+        oracle: Callable[[Union[Input, str]], OracleResult],
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
         working_dir: Path = None,
     ):
         self.grammar = grammar
-        self._prop: Callable[[Input], OracleResult] = prop
+        self._oracle: Callable[[Input], OracleResult] = oracle
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Tuple[Grammar, GrammarType, float]] = []
         self._iteration: int = 0
@@ -78,7 +77,7 @@ class EvoGFrame:
 
     def _setup(self, optimize: bool = False):
         for inp in self.inputs:
-            inp.oracle = self._prop(inp)
+            inp.oracle = self._oracle(inp)
 
         if optimize:
             assert True in set(
@@ -96,7 +95,7 @@ class EvoGFrame:
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
         for inp in test_inputs:
-            label = self._prop(inp)
+            label = self._oracle(inp)
             if label == OracleResult.BUG:
                 self.found_exceptions.add(inp)
             inp.oracle = label
@@ -252,7 +251,7 @@ class EvoGGen(EvoGFrame):
 
     def setup(self):
         for inp in self.inputs:
-            inp.oracle = self._prop(inp)
+            inp.oracle = self._oracle(inp)
 
         assert True in set(
             True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
@@ -304,7 +303,7 @@ class EvoGGen(EvoGFrame):
         new_inputs.update(self._generate_input_files(mutated_grammar))
 
         for inp in new_inputs:
-            label = self._prop(inp)
+            label = self._oracle(inp)
             inp.oracle = label
 
         return new_inputs

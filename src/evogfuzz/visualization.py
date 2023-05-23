@@ -56,7 +56,6 @@ def _mathlib_plot(x_values, grammar_list):
 
 
 def plot(grammar_list: Union[List[Tuple[Grammar, GrammarType, float]], List[Grammar]]):
-
     if isinstance(grammar_list[0], tuple):
         grammar_list = [grammar_tuple[0] for grammar_tuple in grammar_list]
 

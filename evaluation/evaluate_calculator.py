@@ -10,11 +10,7 @@ if __name__ == '__main__':
         format="%(asctime)s:  %(message)s"
     )
 
-    evo = EvoGFuzz(
-        grammar=grammar,
-        prop=prop,
-        inputs=initial_inputs
-    )
+    evo = EvoGFuzz(grammar=grammar, oracle=prop, inputs=initial_inputs)
 
     bugs = evo.fuzz()
     for inp in bugs:
