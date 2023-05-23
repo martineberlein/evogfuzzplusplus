@@ -213,13 +213,19 @@ class EvoGFrame:
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
 
+    def get_found_exceptions_inputs(self) -> Set[Input]:
+        return self.found_exceptions
+
+    def get_found_exceptions_strings(self) -> Set[str]:
+        return {str(inp) for inp in self.get_found_exceptions_inputs()}
+
 
 class EvoGFuzz(EvoGFrame):
     """
     This is the classic EvoGFuzz - the original grammar-based fuzzer!
     """
 
-    def fuzz(self):
+    def fuzz(self) -> Set[Input]:
         logging.info("Fuzzing with EvoGFuzz")
         new_population: Set[Input] = self._setup()
 
@@ -230,7 +236,7 @@ class EvoGFuzz(EvoGFrame):
 
         self._finalize()
 
-        return self.found_exceptions
+        return self.get_found_exceptions_inputs()
 
 
 class EvoGGen(EvoGFrame):
@@ -309,8 +315,7 @@ class EvoGGen(EvoGFrame):
         return new_inputs
 
     def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
-        failing_test_inputs_clean = {str(inp) for inp in failing_test_inputs}
         return (
             self._learn_probabilistic_grammar(failing_test_inputs),
-            failing_test_inputs_clean,
+            failing_test_inputs,
         )

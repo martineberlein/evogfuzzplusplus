@@ -1,6 +1,5 @@
 import sys
 import unittest
-import platform
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
 from evogfuzz_formalizations.calculator import (
@@ -8,6 +7,7 @@ from evogfuzz_formalizations.calculator import (
     initial_inputs,
     prop,
 )
+from evogfuzz.oracle import OracleResult
 from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
 
@@ -27,9 +27,17 @@ class TestEvoGFuzz(unittest.TestCase):
         )
         evogfuzz._setup()
 
-    def test_something(self):
-        self.assertEqual(True, True)  # add assertion here
-
+    def test_evogfuzz_found_exceptions(self):
+        evogfuzz = EvoGFuzz(
+            grammar=grammar,
+            oracle=prop,
+            inputs=initial_inputs,
+            fitness_function=fitness_function,
+        )
+        found_exceptions = evogfuzz.fuzz()
+        all(
+            [True for inp in found_exceptions if inp.oracle == OracleResult.BUG]
+        )
 
 if __name__ == "__main__":
     unittest.main()

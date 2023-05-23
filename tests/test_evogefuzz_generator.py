@@ -64,8 +64,9 @@ class MyTestCase(unittest.TestCase):
         )
 
         generator_grammar, failing_inputs = evo.optimize()
+        failing_inputs_clean = {str(inp) for inp in failing_inputs}
         self.assertEqual(generator_grammar, expected_grammar)
-        self.assertEqual(failing_inputs, {"-8", "-9"})
+        self.assertEqual(failing_inputs_clean, {"-8", "-9"})
 
 
 if __name__ == "__main__":
