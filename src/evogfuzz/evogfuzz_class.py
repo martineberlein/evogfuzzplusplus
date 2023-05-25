@@ -352,7 +352,8 @@ class EvoGGen(EvoGFrame):
         return new_inputs
 
     def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+        final_unique_inputs = {str(inp) for inp in failing_test_inputs}
         return (
-            self._learn_probabilistic_grammar(failing_test_inputs),
+            self._learn_probabilistic_grammar(final_unique_inputs),
             failing_test_inputs,
         )
