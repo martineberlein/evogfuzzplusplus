@@ -4,7 +4,7 @@ from fuzzingbook.Grammars import EXPR_GRAMMAR
 from fuzzingbook.Parser import EarleyParser
 from isla.derivation_tree import DerivationTree
 from evogfuzz.input import Input
-from evogfuzz.grammar_transformation import transform_grammar
+from evogfuzz.grammar_transformation import get_transformed_grammar
 
 
 class TestGrammarTransformation(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestGrammarTransformation(unittest.TestCase):
                 )
             )
 
-        transformed_grammar = transform_grammar(test_inputs, EXPR_GRAMMAR)
+        transformed_grammar = get_transformed_grammar(test_inputs, EXPR_GRAMMAR)
 
         self.assertTrue(
             all(map(lambda x: x in transformed_grammar["<expr>"], ["1 + 2", "2"]))

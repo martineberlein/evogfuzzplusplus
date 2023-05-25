@@ -23,7 +23,7 @@ def extend_grammar(derivation_tree, grammar):
         extend_grammar(child, grammar)
 
 
-def transform_grammar(test_inputs: Set[Input], grammar: Grammar) -> Grammar:
+def get_transformed_grammar(test_inputs: Set[Input], grammar: Grammar) -> Grammar:
     # copy of the grammar
     transformed_grammar = copy.deepcopy(grammar)
 
@@ -37,7 +37,7 @@ def transform_grammar(test_inputs: Set[Input], grammar: Grammar) -> Grammar:
     return transformed_grammar
 
 
-def transform_grammar_with_strings(test_inputs: List[str], grammar: Grammar) -> Grammar:
+def get_transformed_grammar_from_strings(test_inputs: List[str], grammar: Grammar) -> Grammar:
     # copy of the grammar
     transformed_grammar = copy.deepcopy(grammar)
 
