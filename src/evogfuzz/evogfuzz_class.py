@@ -6,7 +6,7 @@ import numpy as np
 from copy import deepcopy
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
+from fuzzingbook.Parser import EarleyParser, tree_to_string
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     is_valid_probabilistic_grammar,
     ProbabilisticGrammarMiner,
@@ -20,6 +20,7 @@ from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
+from evogfuzz.grammar_transformation import get_transformed_grammar
 
 
 class EvoGFrame:
@@ -45,7 +46,7 @@ class EvoGFrame:
         self._elitism_rate: int = 5
         self._tournament_size: int = 4
         self._tournament_number: int = 25
-        self._all_inputs = None
+        self._all_inputs = set()
         self._avg_prev_data = 0
         self.fitness_function: Union[
             Callable[
@@ -104,6 +105,9 @@ class EvoGFrame:
         for inp in test_inputs:
             inp.fitness = self.fitness_function(inp)
 
+        for inp in test_inputs:
+            self._all_inputs.add(inp)
+
         # select fittest individuals
         fittest_individuals: Set[Input] = self._select_fittest_individuals(test_inputs)
 
@@ -161,7 +165,7 @@ class EvoGFrame:
     def _learn_probabilistic_grammar(self, test_inputs: Set[Input]):
         logging.info("Learning new Grammar")
 
-        input_strings = list(str(inp.tree) for inp in test_inputs)
+        input_strings = list(str(inp) for inp in test_inputs)
         # print("\n new learning")
         # print(input_strings)
 
@@ -213,11 +217,26 @@ class EvoGFrame:
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
 
+    def _check_part_of_language(self, inp: str) -> bool:
+        parser = EarleyParser(self.grammar)
+        try:
+            parser.parse(inp)
+            return True
+        except SyntaxError:
+            # return False
+            exit(-1)
+
     def get_found_exceptions_inputs(self) -> Set[Input]:
         return self.found_exceptions
 
     def get_found_exceptions_strings(self) -> Set[str]:
         return {str(inp) for inp in self.get_found_exceptions_inputs()}
+
+    def get_last_grammar(self):
+        return self._get_latest_grammar()
+
+    def get_all_inputs(self):
+        return self._all_inputs
 
 
 class EvoGFuzz(EvoGFrame):
@@ -253,27 +272,54 @@ class EvoGGen(EvoGFrame):
         5.
     """
 
-    failure_inducing_inputs: Set[Input] = set()
+    def __init__(
+        self,
+        grammar: Grammar,
+        oracle: Callable[[Union[Input, str]], OracleResult],
+        inputs: List[str],
+        fitness_function: Callable[[Input], float] = fitness_function_failure,
+        iterations: int = 10,
+        transform_grammar: bool = False
+    ):
+        super().__init__(
+            grammar=grammar,
+            oracle=oracle,
+            inputs=inputs,
+            fitness_function=fitness_function,
+            iterations=iterations,
+        )
+        self.transform_grammar = transform_grammar
+        self.failure_inducing_inputs: Set[Input] = set()
+
 
     def setup(self):
         for inp in self.inputs:
             inp.oracle = self._oracle(inp)
 
-        assert True in set(
-            True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
-        ), "EvoGGen needs at least one bug-triggering input."
-
-    def optimize(self) -> (Grammar, Set[Input]):
-        logging.info("Optimizing with EvoGFuzz")
-        self.scenario = Scenario.GENERATOR
-
-        self.setup()
         self.failure_inducing_inputs.update(
             {inp for inp in self.inputs if inp.oracle == OracleResult.BUG}
         )
 
+        assert True in set(
+            True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
+        ), "EvoGGen needs at least one bug-triggering input."
+
+        if self.transform_grammar:
+            # ToDo find better implementation as this essentially overwrites __init__() from EvoFrame
+            self.grammar = get_transformed_grammar(self.failure_inducing_inputs, self.grammar)
+            # Overwrite the Probabilistic Grammar Miner
+            self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+                EarleyParser(self.grammar)
+            )
+
+    def optimize(self) -> (Grammar, Set[Input]):
+        logging.info("Optimizing with EvoGGen")
+        self.scenario = Scenario.GENERATOR
+
+        self.setup()
+
         while self._do_more_iterations():
-            logging.info("Starting to optimize probabilities")
+            logging.info(f"Starting Iteration {self._iteration}")
             new_test_inputs = self._optimize_loop(self.failure_inducing_inputs)
             self.failure_inducing_inputs.update(
                 {inp for inp in new_test_inputs if inp.oracle == OracleResult.BUG}
@@ -315,7 +361,8 @@ class EvoGGen(EvoGFrame):
         return new_inputs
 
     def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+        final_unique_inputs = {str(inp) for inp in failing_test_inputs}
         return (
-            self._learn_probabilistic_grammar(failing_test_inputs),
+            self._learn_probabilistic_grammar(final_unique_inputs),
             failing_test_inputs,
         )

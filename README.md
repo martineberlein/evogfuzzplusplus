@@ -1,16 +1,15 @@
 [![Tests](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml/badge.svg)](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml)
 &nbsp;
 
-EvoGFuzz
-=======
+# EvoGFuzz
 
-This repo contains the code to execute, develop and test our grammar-based fuzzing tool **EvoGFuzz**,
-which was first described in our paper _Evolutionary Grammar-Based Fuzzing_ accepted at [SSBSE'2020](http://ssbse2020.di.uniba.it/).
+Welcome to the **EvoGFuzz** repository! This repository houses the source code for the innovative grammar-based fuzzing tool EvoGFuzz, as first documented in our paper _Evolutionary Grammar-Based Fuzzing_ that was presented at [SSBSE'2020](http://ssbse2020.di.uniba.it/).
 
-**Example**
+## Quickstart
 
-To illustrate EvoGFuzz’s capabilities, we start with a quick motivating example.
-First, let us introduce our program under test: **The Calculator**. 
+To provide an immediate understanding of EvoGFuzz's capabilities, let's dive into a simple yet illustrative example using a program we've labeled **The Calculator**.
+
+The Calculator program is written in Python and is capable of evaluating mathematical expressions, including arithmetic equations and trigonometric functions:
 
 ```python
 import math
@@ -21,40 +20,41 @@ def arith_eval(inp) -> float:
     )
 ```
 
-This infamous program accepts arithmetic equations, trigonometric functions and allows us to calculate the square root.
-To help us determine faulty behavior, i.e., a crash, we implement an evaluation function
+We use an oracle function to discern between normal and faulty behavior:
 
 ```python 
-def prop(inp: str) -> bool:
+from evogfuzz.oracle import OracleResult
+
+def oracle(inp: str) -> OracleResult:
     try:
         arith_eval(inp)
-        return False
+        return OracleResult.NO_BUG
     except ValueError:
-        return True
-    return False
+        return OracleResult.BUG
+    
+    return OracleResult.NO_BUG
 ``` 
 
-that takes an input file and returns whether a bug occurred during the evaluation of the mathematical equations (`BUG=True`, `NO_BUG=False`). 
-We can now test the calculator with some sample inputs:
+We can see this in action by testing a few initial inputs:
 
 ```python
-inputs = ['cos(10)', 'sqrt(28367)', 'tan(-12)', 'sqrt(-3)']
-print([(x, prop(x)) for x in inputs])
+initial_inputs = ['cos(10)', 'sqrt(28367)', 'tan(-12)', 'sqrt(3)']
+print([(x, oracle(x)) for x in initial_inputs])
 ```
 
-The output looks like this:
+This will yield the following output:
 
 ```
-[('cos(10)', False),
- ('sqrt(28367)', False),
- ('tan(-12)', False),
- ('sqrt(-3)', True)]
+[('cos(10)', OracleResult.NO_BUG),
+ ('sqrt(28367)', OracleResult.NO_BUG),
+ ('tan(-12)', OracleResult.NO_BUG),
+ ('sqrt(3)', OracleResult.NO_BUG)]
 ```
 
-We see that `sqrt(-3)` results in the failure of our calculator program.
-We can now use **EvoGFuzz** to learn a _probabilistic grammar_ that describes all failing inputs. 
+We apply our `EvoGFuzz` class to carry out fuzz testing using evolutionary grammar-based fuzzing. This is aimed at uncovering potential defects in our 'calculator' function.
 
-First, we need to define the input format of the calculator with a grammar:
+First, we must define the input format of the calculator using a grammar:
+
 ```python
 import string
 
@@ -71,80 +71,60 @@ grammar = {
 }
 ```
 
-Then, we can call **EvoGFuzz** with the grammar, some sample inputs, and the evaluation function (program under test).
+With the grammar in place, we can initialize **EvoGFuzz** with this grammar, the sample inputs, and the oracle function:
 
 ```python
 from evogfuzz.evogfuzz_class import EvoGFuzz
-from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
 epp = EvoGFuzz(
     grammar=grammar,
-    oracle=prop,
-    inputs=inputs,
+    oracle=oracle,
+    inputs=initial_inputs,
+    iterations=10
 )
-
-epp.execute()
 ```
 
-By default, **EvoGFuzz** will do _10_ iterations of its evolutionary optimization.
-Finally, **EvoGFuzz** returns the probabilistic grammar that describes the failure-inducing inputs.
-
-For our calculator, the learned grammar looks something like this:
+Upon creating the `EvoGFuzz` instance, we can execute the fuzzing process. The `fuzz()` method runs the fuzzing iterations, evolving the inputs based on our fitness function, and returns a collection of inputs that lead to exceptions in the 'calculator' function.
 
 ```python
-{'<start>': [('<arith_expr>', {'prob': None})],
- '<arith_expr>': [('<function>(<number>)', {'prob': None})],
- '<function>': [('sqrt', {'prob': 1.0}),
-                ('sin', {'prob': 0.0}),
-                ('cos', {'prob': 0.0}),
-                ('tan', {'prob': 0.0})],
- '<maybe_minus>': [('', {'prob': 0.0}), ('-', {'prob': 1.0})],
- '<number>': [('<maybe_minus><onenine><maybe_digits>', {'prob': None})],
- '<digit>': [...],
- '<digits>': [('<digit>', {'prob': 0.5}), ('<digit><digits>', {'prob': 0.5})],
- '<maybe_digits>': [('', {'prob': 0.0}), ('<digits>', {'prob': 1.0})],
- '<onenine>': [('1', {'prob': 0.26448026237029304}),
-               ('2', {'prob': 0.13854210013644921}),
-               ('3', {'prob': 0.07928598549297672}),
-               ('4', {'prob': 0.0038772429661826603}),
-               ('5', {'prob': 0.21379401641055015}),
-               ('6', {'prob': 0.009018562666488764}),
-               ('7', {'prob': 0.09581593224585401}),
-               ('8', {'prob': 0.008346286752892956}),
-               ('9', {'prob': 0.18683961095831245})]}
+found_exception_inputs = epp.fuzz()
 ```
 
-By looking at the probabilities of the competing alternatives of the production rules, we quickly spot that all failure-inducing inputs use the `sqrt(x)` function and contain a `<maybe_minus> == '-'`.
-
-By following the learned probabilities, we can now use this probabilistic grammar to produce new inputs failure-inducing inputs  
+Lastly, we can examine the inputs that resulted in exceptions.
+This output can provide valuable insight into potential weaknesses in the 'calculator' function that need to be addressed.
 
 ```python
-from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarFuzzer
-
-# Use probabilistic fuzzer with final grammar
-fuzzer = ProbabilisticGrammarFuzzer(epp._probabilistic_grammars[-1][0])
-
-for _ in range(10):
-    inp = fuzzer.fuzz()
-    print(inp, prop(inp))
+for inp in list(found_exception_inputs)[:20]:
+    print(str(inp).ljust(30), inp.oracle)
 ```
 
 Output:
 
-```python
-('sqrt(-38584459)', True)
-('sqrt(-750764974567536585)', True)
-('sqrt(-79460500)', True)
-('sqrt(-364)', True)
-('sqrt(-75)', True)
-('sqrt(-35554653089074)', True)
-('sqrt(-77549465054)', True)
-('sqrt(-256)', True)
-('sqrt(-28550)', True)
-('sqrt(-374574)', True)
-```
+````
+sqrt(-61)                      BUG
+sqrt(-373)                     BUG
+sqrt(-78)                      BUG
+sqrt(-4)                       BUG
+sqrt(-6)                       BUG
+sqrt(-73)                      BUG
+sqrt(-45)                      BUG
+sqrt(-87738)                   BUG
+sqrt(-5587)                    BUG
+sqrt(-823853)                  BUG
+sqrt(-38317)                   BUG
+sqrt(-83)                      BUG
+sqrt(-7)                       BUG
+sqrt(-43)                      BUG
+sqrt(-71337)                   BUG
+sqrt(-3737437)                 BUG
+sqrt(-17)                      BUG
+sqrt(-33)                      BUG
+sqrt(-57662773794)             BUG
+sqrt(-731)                     BUG
+````
 
-We see that all generated inputs now trigger the failure of the calculator.
+This process illustrates the power of evolutionary grammar-based fuzzing in identifying new defects within our system.
+By applying evolutionary algorithms to our fuzzing strategy, we can guide the search towards more defect-prone regions of the input space.
 
 ## Install, Development, Testing, Build
 

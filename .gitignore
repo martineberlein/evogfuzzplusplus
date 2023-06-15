@@ -235,3 +235,5 @@ TSWLatexianTemp*
 *.idea
 *__pycache__
 /src/evogfuzz.egg-info/
+/sanbox/
+/notebooks/.ipynb_checkpoints/
