@@ -46,7 +46,7 @@ class EvoGFrame:
         self._elitism_rate: int = 5
         self._tournament_size: int = 4
         self._tournament_number: int = 25
-        self._all_inputs = None
+        self._all_inputs = set()
         self._avg_prev_data = 0
         self.fitness_function: Union[
             Callable[
@@ -104,6 +104,9 @@ class EvoGFrame:
         # determine fitness of individuals
         for inp in test_inputs:
             inp.fitness = self.fitness_function(inp)
+
+        for inp in test_inputs:
+            self._all_inputs.add(inp)
 
         # select fittest individuals
         fittest_individuals: Set[Input] = self._select_fittest_individuals(test_inputs)
@@ -228,6 +231,12 @@ class EvoGFrame:
 
     def get_found_exceptions_strings(self) -> Set[str]:
         return {str(inp) for inp in self.get_found_exceptions_inputs()}
+
+    def get_last_grammar(self):
+        return self._get_latest_grammar()
+
+    def get_all_inputs(self):
+        return self._all_inputs
 
 
 class EvoGFuzz(EvoGFrame):
