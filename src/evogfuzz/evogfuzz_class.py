@@ -75,7 +75,9 @@ class EvoGFrame:
 
         # Apply patch to fuzzingbook
         helper.patch()
-
+# input : self (evogframe object, boolean)
+# out.  : initial_population
+# first pass of probabilistic grammar initialization and return of first pass input file
     def _setup(self, optimize: bool = False):
         for inp in self.inputs:
             inp.oracle = self._oracle(inp)
