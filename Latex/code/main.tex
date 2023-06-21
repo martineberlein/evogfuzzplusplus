@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+%========= PACKAGES ==========
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{setspace}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{comment}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{pdfpages}
+
+%========= COSMETICS ON TOP OF PAGE ==========
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead{}
+\fancyhead[L]{EvoGFuzz}
+\fancyhead[R]{Software Engineering II}
+\fancyfoot{}
+\fancyfoot[C]{\hfill\thepage\hfill}
+
+\titlespacing{\chapter}{0pt}{*4}{*2.5}
+
+\titleformat{\chapter}{\normalfont\huge\bf}{\thechapter}{20pt}{\huge\bf}
+
+\begin{document}
+
+\input{title}
+
+\newpage
+\section{Topic}
+Evolutionary Grammar-based fuzzing. (EvoGFuzz)\\
+
+\section{Tool}
+EvoGFuzzPlusPlus by Martin Eberlein and Eik Reichmann. \\
+Website: \href{https://github.com/martineberlein/evogfuzzplusplus}{https://github.com/martineberlein/evogfuzzplusplus} \\
+ISLa : \href{https://github.com/rindPHI/isla}{https://github.com/rindPHI/isla}
+
+\section{Research question}
+%ISLa (input specification language) (github documentation)
+%For optimization purposes and to ensure that the fuzzer has only semantically correct inputs (semantisch richtige eingabe achten (bei grammar schauen))
+%Comparison of the fuzzer with and without ISLA constraints
+%Using the ISLA with ISLearn
+
+%Alternative: Fitness Funktion
+
+Usage of ISLa to expand EvoGFuzz via (maybe ISLearn and) semantic constraints. \\
+
+\section{Motivation}
+Adding semantic constraints to evolutionary grammar-based fuzzing in order to test improvements in precision and recall. \\
+We will compare runtime, precision, and recall, with and without usage of ISLa.
+
+\section{Suggested Solution}
+While generating the input files, use iSLA constraints to generate semantically correct inputs. We hope the implementation of ISLa will increase precision/recall, and thus enhance the performance of EvoGFuzz.
+
+\end{document}
