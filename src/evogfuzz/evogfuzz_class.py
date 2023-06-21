@@ -77,7 +77,7 @@ class EvoGFrame:
         helper.patch()
 # input : self (evogframe object, boolean)
 # out.  : initial_population
-# first pass of probabilistic grammar initialization and return of first pass input file
+# labels each input with oracle, remembers the current prob_grammar
     def _setup(self, optimize: bool = False):
         for inp in self.inputs:
             inp.oracle = self._oracle(inp)
