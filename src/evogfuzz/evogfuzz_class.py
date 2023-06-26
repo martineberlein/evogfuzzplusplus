@@ -274,7 +274,7 @@ class EvoGGen(EvoGFrame):
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
-        transform_grammar: bool = False
+        transform_grammar: bool = False,
     ):
         super().__init__(
             grammar=grammar,
@@ -285,7 +285,6 @@ class EvoGGen(EvoGFrame):
         )
         self.transform_grammar = transform_grammar
         self.failure_inducing_inputs: Set[Input] = set()
-
 
     def _setup(self):
         for inp in self.inputs:
@@ -301,7 +300,9 @@ class EvoGGen(EvoGFrame):
 
         if self.transform_grammar:
             # ToDo find better implementation as this essentially overwrites __init__() from EvoFrame
-            self.grammar = get_transformed_grammar(self.failure_inducing_inputs, self.grammar)
+            self.grammar = get_transformed_grammar(
+                self.failure_inducing_inputs, self.grammar
+            )
             # Overwrite the Probabilistic Grammar Miner
             self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
                 EarleyParser(self.grammar)
