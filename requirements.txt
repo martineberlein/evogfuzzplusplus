@@ -1,4 +1,3 @@
-evogfuzz~=0.0.2
 numpy~=1.24.0
 fuzzingbook~=1.1
 setuptools~=65.5.1
