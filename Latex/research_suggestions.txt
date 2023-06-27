@@ -1,0 +1,29 @@
+Vorschlag:
+Vereinen von Mutate-ISLa und EvoGGen.
+===========================================
+1. semantisch valide Inputs, set of semantic constraints
+2. mutate inputs instead of recreating with grammar
+3. bug-triggering input files added to mutation corpus
+4. learn grammar ONLY from semantically correct, bug-triggering inputs
+5. create new bug-trig inputs 
+============================================
+Vergleich von Prec/Recall von EvoGGen und unserer extension. 
+Forschungsfragen (Vorschläge):
+evolutionäres fuzzing im vgl mit anderen methoden, mit und ohne unsere erweiterung.
+lohnt es sich semantische constraints einzubauen? ->
+	runtime und komplexitätsanalyse (vom code aber auch von input files)?
+portability des codes, kann man ihn anpassen auf andere sprachen? 
+untersuchung von versch input-werten -> 
+	(wie stark mutiert mutiert man? 
+	 wv iterationen/constraint?
+	 wie komplex die programme/grammatiken?)
+		=> wir können ja z.b. an fitnessfkt rumschrauben, 
+		bspw. semantisch valide inputs stärker gewichten, aber nicht 1/0 wie das im code jetzt ist, 
+		sondern bspw. 0,6/0,3 usw. -> wie schnell werden die inputs/grammatiken gut und wie schnell
+		läuft man in ein lokales maximum evtl. 
+umgehung von lokalen gipfeln, hill-climbing von evolutionären algos vllt iwie abgeschwächt durch die semantischen aspekte?
+	-> ich denke eher dass wir schneller in eine lokale extremstelle kommen, aber vllt kann man ja mehrere
+	constraints irgendwie zsmfügen, sodass man verschiedenste inputs generieren kann
+ist es mgl mehrere semantisch falsche inputs gleichzeitig zu generieren? wenn ja, kann man diese vllt in getrennten
+probabilistischen grammatiken festhalten und diese sogar labeln?
+
