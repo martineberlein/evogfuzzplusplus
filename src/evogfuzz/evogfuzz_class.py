@@ -308,7 +308,7 @@ class EvoGGen(EvoGFrame):
                 EarleyParser(self.grammar)
             )
 
-    def optimize(self) -> (Grammar, Set[Input]):
+    def optimize(self) -> Tuple[Grammar, Set[Input]]:
         logging.info("Optimizing with EvoGGen")
         self.scenario = Scenario.GENERATOR
 
@@ -356,7 +356,7 @@ class EvoGGen(EvoGFrame):
 
         return new_inputs
 
-    def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+    def _finalize(self, failing_test_inputs: Set[Input]) -> Tuple[Grammar, Set[Input]]:
         final_unique_inputs = {str(inp) for inp in failing_test_inputs}
         return (
             self._learn_probabilistic_grammar(final_unique_inputs),
