@@ -1,4 +1,9 @@
+[![Python Version](https://img.shields.io/pypi/pyversions/evogfuzz)](https://pypi.org/project/evogfuzz/)
+[![GitHub release](https://img.shields.io/github/v/release/martineberlein/evogfuzzplusplus)](https://github.com/martineberlein/evogfuzzplusplus/releases)
+[![PyPI](https://img.shields.io/pypi/v/evogfuzz)](https://pypi.org/project/evogfuzz/)
 [![Tests](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml/badge.svg)](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml)
+[![Licence](https://img.shields.io/github/license/martineberlein/evogfuzzplusplus)](https://img.shields.io/github/license/martineberlein/evogfuzzplusplus)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 &nbsp;
 
 # EvoGFuzz
