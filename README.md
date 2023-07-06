@@ -151,10 +151,13 @@ pip install evogfuzz
 <td>
 
 ```
-python3.10 -m venv venv
-source venv/Scripts/activate
+#create a venv with the specified version
+py -3.10 -m venv venv3_10
 
-python.exe -m pip install --upgrade pip
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+venv3_10/Scripts/Activate.ps1
+
+python -m pip install --upgrade pip
 pip install evogfuzz
 ```
 </td>
@@ -196,14 +199,15 @@ python3 -m pytest
 git clone https://github.com/martineberlein/evogfuzzplusplus.git
 cd evogfuzzplusplus/
 
-python3.10 -m venv venv
-source venv/Scripts/activate
+py -3.10 -m venv venv3_10
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+venv3_10/Scripts/Activate.ps1
 
-python.exe -m pip install --upgrade pip
+python -m pip install --upgrade pip
 
 # Run tests
 pip install -e .[dev]
-python3 -m pytest
+python -m pytest
 ```
 </td>
 </tr>
@@ -240,12 +244,13 @@ python3 -m build
 git clone https://github.com/martineberlein/evogfuzzplusplus.git
 cd evogfuzz/
 
-python3.10 -m venv venv
-source venv/Scripts/activate
+py -3.10 -m venv venv3_10
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+venv3_10/Scripts/Activate.ps1
 
-python.exe -m pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install --upgrade build
-python3 -m build
+python -m build
 ```
 </td>
 </tr>
