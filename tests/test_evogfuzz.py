@@ -35,9 +35,8 @@ class TestEvoGFuzz(unittest.TestCase):
             fitness_function=fitness_function,
         )
         found_exceptions = evogfuzz.fuzz()
-        all(
-            [True for inp in found_exceptions if inp.oracle == OracleResult.BUG]
-        )
+        all([True for inp in found_exceptions if inp.oracle == OracleResult.BUG])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ import os.path
 import subprocess
 import logging
 import sys
+import shutil
 from typing import List
 
 from distutils.sysconfig import get_python_lib
@@ -11,6 +12,8 @@ from importlib import reload
 
 from fuzzingbook import ProbabilisticGrammarFuzzer
 from fuzzingbook import GrammarCoverageFuzzer
+
+from evogfuzz_formalizations import patch_file_location
 
 PATCH_ERROR = -3
 
@@ -31,14 +34,28 @@ PATCH = b"""
 --
 """
 
-
 def patch():
+    if sys.platform == "win32":
+        patch_windows()
+    else:
+        patch_unix()
+
+def patch_windows():
+    site_packages = get_python_lib()
+    grammar_coverage_fuzzer_location = (
+        Path(site_packages) / "fuzzingbook" / "GrammarCoverageFuzzer.py"
+    )
+
+    shutil.copyfile(patch_file_location, grammar_coverage_fuzzer_location)
+
+
+def patch_unix():
     site_packages = get_python_lib()
     grammar_coverage_fuzzer = (
         Path(site_packages) / "fuzzingbook" / "GrammarCoverageFuzzer.py"
     )
 
-    patch_file = NamedTemporaryFile(suffix=".patch")
+    patch_file = NamedTemporaryFile(suffix=".patch", delete=False)
     patch_file.write(PATCH)
     patch_file.seek(0)
 
