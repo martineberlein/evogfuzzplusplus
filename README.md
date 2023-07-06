@@ -1,4 +1,9 @@
+[![Python Version](https://img.shields.io/pypi/pyversions/evogfuzz)](https://pypi.org/project/evogfuzz/)
+[![GitHub release](https://img.shields.io/github/v/release/martineberlein/evogfuzzplusplus)](https://github.com/martineberlein/evogfuzzplusplus/releases)
+[![PyPI](https://img.shields.io/pypi/v/evogfuzz)](https://pypi.org/project/evogfuzz/)
 [![Tests](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml/badge.svg)](https://github.com/martineberlein/evogfuzzplusplus/actions/workflows/test_evogfuzz.yml)
+[![Licence](https://img.shields.io/github/license/martineberlein/evogfuzzplusplus)](https://img.shields.io/github/license/martineberlein/evogfuzzplusplus)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 &nbsp;
 
 # EvoGFuzz
@@ -258,45 +263,3 @@ python -m build
 
 
 Then, you will find the built wheel (*.whl) in the dist/ directory.
-
-# How to setup EvoGFuzz?
-
-_EvoGFuzz++_ requires the tool `tribble`. It needs to be installed independently.
-
-```
-Setup Script will follow soon
-```
-
-# How to run EvoGFuzz?
-
-
-```
-python3 evogfuzz.py --output <out_dir> --target <subject_driver>
-```
-
-where
-* `<output_dir>` is where evogfuzz's output shows up
-* `<subject_driver>` is a python file which contains a ``execute_samples()`` method,
-  which returns the driver object for the program under test.
-
-The ``subject_driver`` for existing subjects can be found in the folders of the subjects/ folder.
-If you e.g. want to run Rhino you would invoke
-
-```
-python3 evogfuzz.py --output ../results --target ../subjects/Rhino/subject_driver.py
-```
-
-# How to add subjects?
-
-* `<grammar_driver>` ..
-* `<subject_driver>` ..
-
-# Requirements
-
-In order to run EvoGFuzz, the ANTLR parser generator (Version 4.7.1) is required.
-Additionally, the class path for antlr4 needs to be exported.
-
-```
-export CLASSPATH=".:/<path-to-ANTLR-library>/antlr-4.5-complete.jar:$CLASSPATH"
-java org.antlr.v4.Tool
-```

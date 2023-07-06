@@ -6,7 +6,7 @@ import numpy as np
 from copy import deepcopy
 
 from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser, tree_to_string
+from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     is_valid_probabilistic_grammar,
     ProbabilisticGrammarMiner,
@@ -76,14 +76,9 @@ class EvoGFrame:
         # Apply patch to fuzzingbook
         helper.patch()
 
-    def _setup(self, optimize: bool = False):
+    def _setup(self):
         for inp in self.inputs:
             inp.oracle = self._oracle(inp)
-
-        if optimize:
-            assert True in set(
-                True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
-            ), "EvoGFuzz needs at least one bug-triggering input."
 
         probabilistic_grammar = self._learn_probabilistic_grammar(self.inputs)
         self._probabilistic_grammars.append(
@@ -279,7 +274,7 @@ class EvoGGen(EvoGFrame):
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
-        transform_grammar: bool = False
+        transform_grammar: bool = False,
     ):
         super().__init__(
             grammar=grammar,
@@ -291,8 +286,7 @@ class EvoGGen(EvoGFrame):
         self.transform_grammar = transform_grammar
         self.failure_inducing_inputs: Set[Input] = set()
 
-
-    def setup(self):
+    def _setup(self):
         for inp in self.inputs:
             inp.oracle = self._oracle(inp)
 
@@ -306,7 +300,9 @@ class EvoGGen(EvoGFrame):
 
         if self.transform_grammar:
             # ToDo find better implementation as this essentially overwrites __init__() from EvoFrame
-            self.grammar = get_transformed_grammar(self.failure_inducing_inputs, self.grammar)
+            self.grammar = get_transformed_grammar(
+                self.failure_inducing_inputs, self.grammar
+            )
             # Overwrite the Probabilistic Grammar Miner
             self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
                 EarleyParser(self.grammar)
@@ -316,7 +312,7 @@ class EvoGGen(EvoGFrame):
         logging.info("Optimizing with EvoGGen")
         self.scenario = Scenario.GENERATOR
 
-        self.setup()
+        self._setup()
 
         while self._do_more_iterations():
             logging.info(f"Starting Iteration {self._iteration}")
