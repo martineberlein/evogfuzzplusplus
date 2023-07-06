@@ -237,3 +237,5 @@ TSWLatexianTemp*
 /src/evogfuzz.egg-info/
 /sanbox/
 /notebooks/.ipynb_checkpoints/
+/venv3_10/
+/venv3_11/
