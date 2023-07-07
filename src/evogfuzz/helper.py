@@ -34,11 +34,13 @@ PATCH = b"""
 --
 """
 
+
 def patch():
     if sys.platform == "win32":
         patch_windows()
     else:
         patch_unix()
+
 
 def patch_windows():
     site_packages = get_python_lib()
