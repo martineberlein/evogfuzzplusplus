@@ -9,18 +9,17 @@ from fuzzingbook.Grammars import Grammar
 from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     is_valid_probabilistic_grammar,
-    ProbabilisticGrammarMiner,
     ProbabilisticGrammarFuzzer,
 )
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import get_transformed_grammar
+from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
 
 
 class EvoGFrame:
@@ -59,7 +58,7 @@ class EvoGFrame:
         # Fuzzing
         self.found_exceptions = set()
 
-        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+        self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
             EarleyParser(self.grammar)
         )
 
@@ -74,7 +73,7 @@ class EvoGFrame:
             )
 
         # Apply patch to fuzzingbook
-        helper.patch()
+        # helper.patch()
 
     def _setup(self):
         for inp in self.inputs:
@@ -161,7 +160,7 @@ class EvoGFrame:
     def _learn_probabilistic_grammar(self, test_inputs: Set[Input], reset=True):
         logging.info("Learning new Grammar")
 
-        learning_trees = list(inp.tree for inp in test_inputs)
+        # learning_trees = list(inp.tree for inp in test_inputs)
         # print("\n new learning")
         # print(input_strings)
 
@@ -169,7 +168,7 @@ class EvoGFrame:
             self._probabilistic_grammar_miner.reset()
 
         probabilistic_grammar = (
-            self._probabilistic_grammar_miner.mine_probabilistic_grammar(learning_trees)
+            self._probabilistic_grammar_miner.mine_probabilistic_grammar(test_inputs)
         )
 
         assert is_valid_probabilistic_grammar(
@@ -308,7 +307,7 @@ class EvoGGen(EvoGFrame):
             )
 
             # Overwrite the Probabilistic Grammar Miner
-            self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+            self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
                 EarleyParser(self.grammar)
             )
 
