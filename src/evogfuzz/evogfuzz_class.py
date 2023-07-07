@@ -9,18 +9,17 @@ from fuzzingbook.Grammars import Grammar
 from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     is_valid_probabilistic_grammar,
-    ProbabilisticGrammarMiner,
     ProbabilisticGrammarFuzzer,
 )
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import get_transformed_grammar
+from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
 
 
 class EvoGFrame:
@@ -59,7 +58,7 @@ class EvoGFrame:
         # Fuzzing
         self.found_exceptions = set()
 
-        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+        self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
             EarleyParser(self.grammar)
         )
 
@@ -74,7 +73,7 @@ class EvoGFrame:
             )
 
         # Apply patch to fuzzingbook
-        helper.patch()
+        # helper.patch()
 
     def _setup(self):
         for inp in self.inputs:
@@ -135,6 +134,7 @@ class EvoGFrame:
             new_test_inputs.add(
                 Input(DerivationTree.from_parse_tree(probabilistic_fuzzer.fuzz_tree()))
             )
+        logging.info(f"Generated {len(new_test_inputs)} new Test Inputs")
         return new_test_inputs
 
     def _safe_fitness_for_grammar(self, sum_fitness: float):
@@ -157,17 +157,19 @@ class EvoGFrame:
 
         return fittest_individuals
 
-    def _learn_probabilistic_grammar(self, test_inputs: Set[Input]):
+    def _learn_probabilistic_grammar(self, test_inputs: Set[Input], reset=True):
         logging.info("Learning new Grammar")
 
-        input_strings = list(str(inp) for inp in test_inputs)
+        # learning_trees = list(inp.tree for inp in test_inputs)
         # print("\n new learning")
         # print(input_strings)
 
+        if reset:
+            self._probabilistic_grammar_miner.reset()
+
         probabilistic_grammar = (
-            self._probabilistic_grammar_miner.mine_probabilistic_grammar(input_strings)
+            self._probabilistic_grammar_miner.mine_probabilistic_grammar(test_inputs)
         )
-        self._probabilistic_grammar_miner.reset()
 
         assert is_valid_probabilistic_grammar(
             probabilistic_grammar
@@ -301,10 +303,11 @@ class EvoGGen(EvoGFrame):
         if self.transform_grammar:
             # ToDo find better implementation as this essentially overwrites __init__() from EvoFrame
             self.grammar = get_transformed_grammar(
-                self.failure_inducing_inputs, self.grammar
+                self.failure_inducing_inputs, self.grammar, recursive=False
             )
+
             # Overwrite the Probabilistic Grammar Miner
-            self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+            self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
                 EarleyParser(self.grammar)
             )
 
@@ -314,12 +317,14 @@ class EvoGGen(EvoGFrame):
 
         self._setup()
 
+        new_test_inputs = self.failure_inducing_inputs
         while self._do_more_iterations():
             logging.info(f"Starting Iteration {self._iteration}")
-            new_test_inputs = self._optimize_loop(self.failure_inducing_inputs)
-            self.failure_inducing_inputs.update(
-                {inp for inp in new_test_inputs if inp.oracle == OracleResult.BUG}
-            )
+            generated_inputs = self._optimize_loop(new_test_inputs)
+            new_test_inputs = {
+                inp for inp in generated_inputs if inp.oracle == OracleResult.BUG
+            }
+            self.failure_inducing_inputs.update(new_test_inputs)
             self._iteration = self._iteration + 1
 
         # Finalize
@@ -335,8 +340,12 @@ class EvoGGen(EvoGFrame):
         # no selectio as we learn from all failing inputs
         # fittest_individuals: Set[Input] = self._select_fittest_individuals(failing_test_inputs)
 
+        learning_set = failing_test_inputs - self.failure_inducing_inputs
+
         # learn new probabilistic grammar; Learn only from the most
-        probabilistic_grammar = self._learn_probabilistic_grammar(failing_test_inputs)
+        probabilistic_grammar = self._learn_probabilistic_grammar(
+            learning_set, reset=False
+        )
         self._probabilistic_grammars.append(
             (deepcopy(probabilistic_grammar), GrammarType.LEARNED, -1)
         )
@@ -347,7 +356,6 @@ class EvoGGen(EvoGFrame):
 
         new_inputs: Set[Input] = set()
         new_inputs.update(self._generate_input_files(probabilistic_grammar))
-
         new_inputs.update(self._generate_input_files(mutated_grammar))
 
         for inp in new_inputs:
@@ -357,8 +365,7 @@ class EvoGGen(EvoGFrame):
         return new_inputs
 
     def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
-        final_unique_inputs = {str(inp) for inp in failing_test_inputs}
         return (
-            self._learn_probabilistic_grammar(final_unique_inputs),
+            self._learn_probabilistic_grammar(failing_test_inputs, reset=True),
             failing_test_inputs,
         )

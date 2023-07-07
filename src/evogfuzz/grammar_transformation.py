@@ -8,7 +8,7 @@ from fuzzingbook.GrammarFuzzer import tree_to_string
 from evogfuzz.input import Input
 
 
-def extend_grammar(derivation_tree, grammar):
+def extend_grammar(derivation_tree, grammar, original_grammar, recursive: bool = True):
     (node, children) = derivation_tree
 
     if is_nonterminal(node):
@@ -17,18 +17,23 @@ def extend_grammar(derivation_tree, grammar):
 
         # Only add to grammar if not already existent
         if word not in grammar[node]:
-            grammar[node].append(word)
+            if recursive:
+                grammar[node].append(word)
+            elif not recursive and grammar[node] == original_grammar[node]:
+                grammar[node].append(word)
 
     for child in children:
-        extend_grammar(child, grammar)
+        extend_grammar(child, grammar, original_grammar, recursive)
 
 
-def get_transformed_grammar(test_inputs: Set[Input], grammar: Grammar) -> Grammar:
+def get_transformed_grammar(
+    test_inputs: Set[Input], grammar: Grammar, recursive: bool = True
+) -> Grammar:
     # copy of the grammar
     transformed_grammar = copy.deepcopy(grammar)
 
     for inp in test_inputs:
-        extend_grammar(inp.tree, transformed_grammar)
+        extend_grammar(inp.tree, transformed_grammar, grammar, recursive=recursive)
 
     # Add dummy rule
     transformed_grammar = _add_dummy_rule(transformed_grammar)
@@ -38,7 +43,7 @@ def get_transformed_grammar(test_inputs: Set[Input], grammar: Grammar) -> Gramma
 
 
 def get_transformed_grammar_from_strings(
-    test_inputs: List[str], grammar: Grammar
+    test_inputs: List[str], grammar: Grammar, recursive: bool = True
 ) -> Grammar:
     # copy of the grammar
     transformed_grammar = copy.deepcopy(grammar)
@@ -46,7 +51,7 @@ def get_transformed_grammar_from_strings(
     parser = EarleyParser(grammar)
     for inp in test_inputs:
         for tree in parser.parse(inp):
-            extend_grammar(tree, transformed_grammar)
+            extend_grammar(tree, transformed_grammar, recursive=recursive)
 
     # Add dummy rule
     transformed_grammar = _add_dummy_rule(transformed_grammar)
