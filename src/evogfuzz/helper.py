@@ -1,9 +1,9 @@
-import os.path
 import subprocess
 import logging
 import sys
 import shutil
 from typing import List
+from warnings import warn
 
 from distutils.sysconfig import get_python_lib
 from pathlib import Path
@@ -36,6 +36,7 @@ PATCH = b"""
 
 
 def patch():
+    warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
     if sys.platform == "win32":
         patch_windows()
     else:
@@ -43,6 +44,7 @@ def patch():
 
 
 def patch_windows():
+    warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
     site_packages = get_python_lib()
     grammar_coverage_fuzzer_location = (
         Path(site_packages) / "fuzzingbook" / "GrammarCoverageFuzzer.py"
@@ -52,6 +54,7 @@ def patch_windows():
 
 
 def patch_unix():
+    warn("This method is deprecated.", DeprecationWarning, stacklevel=2)
     site_packages = get_python_lib()
     grammar_coverage_fuzzer = (
         Path(site_packages) / "fuzzingbook" / "GrammarCoverageFuzzer.py"
@@ -91,7 +94,3 @@ def run_cmd(
         logging.error(e)
         logging.error(f"Can't execute command {cmd}!")
         sys.exit(PATCH_ERROR)
-
-
-if __name__ == "__main__":
-    sys.exit(patch())
