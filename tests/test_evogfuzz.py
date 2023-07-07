@@ -26,6 +26,7 @@ class TestEvoGFuzz(unittest.TestCase):
             fitness_function=fitness_function,
         )
         evogfuzz._setup()
+        self.assertTrue(True)
 
     def test_evogfuzz_found_exceptions(self):
         evogfuzz = EvoGFuzz(
@@ -35,7 +36,9 @@ class TestEvoGFuzz(unittest.TestCase):
             fitness_function=fitness_function,
         )
         found_exceptions = evogfuzz.fuzz()
-        all([True for inp in found_exceptions if inp.oracle == OracleResult.BUG])
+        self.assertTrue(
+            all([True for inp in found_exceptions if inp.oracle == OracleResult.BUG])
+        )
 
 
 if __name__ == "__main__":

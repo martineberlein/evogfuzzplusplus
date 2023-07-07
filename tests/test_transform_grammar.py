@@ -19,7 +19,10 @@ class TestGrammarTransformation(unittest.TestCase):
                 )
             )
 
-        transformed_grammar = get_transformed_grammar(test_inputs, EXPR_GRAMMAR)
+        transformed_grammar = get_transformed_grammar(
+            test_inputs, EXPR_GRAMMAR, recursive=True
+        )
+        print(transformed_grammar)
 
         self.assertTrue(
             all(map(lambda x: x in transformed_grammar["<expr>"], ["1 + 2", "2"]))
