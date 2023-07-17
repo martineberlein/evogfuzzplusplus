@@ -1,5 +1,4 @@
 import unittest
-from typing import Tuple
 
 from isla.derivation_tree import DerivationTree
 from fuzzingbook.Parser import EarleyParser, is_valid_grammar, Grammar

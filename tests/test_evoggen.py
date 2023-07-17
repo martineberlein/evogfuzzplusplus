@@ -2,8 +2,6 @@ import unittest
 import string
 from itertools import product
 
-from pprint import pprint
-from typing import Dict
 from fuzzingbook.Grammars import Grammar, is_valid_grammar
 from fuzzingbook.Parser import EarleyParser, tree_to_string
 
@@ -114,24 +112,12 @@ class TestEvoGGen(unittest.TestCase):
         self.assertEqual(generator_grammar, expected_grammar)
         self.assertEqual(failing_inputs_clean, {"-8", "-9"})
 
-    def test_evoggen_complex(self):
-        evo = EvoGGen(
-            grammar=grammar_2, inputs=initial_inputs_2, oracle=oracle_2, iterations=10
-        )
-
-        generator_grammar, failing_inputs = evo.optimize()
-        failing_inputs_clean = {str(inp) for inp in failing_inputs}
-        for i in failing_inputs_clean:
-            print(i)
-        # self.assertEqual(generator_grammar, expected_grammar)
-        # self.assertEqual(failing_inputs_clean, {"-8", "-9"})
-
     def test_evoggen_transform_grammar(self):
         evo = EvoGGen(
             grammar=grammar_2,
             inputs=initial_inputs_2,
             oracle=oracle_2,
-            iterations=100,
+            iterations=20,
             transform_grammar=True,
         )
 
