@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import Callable, List, Union, Set, Tuple
 from pathlib import Path
 from random import choice
@@ -45,6 +46,7 @@ class EvoGFrame:
         self._elitism_rate: int = 5
         self._tournament_size: int = 4
         self._tournament_number: int = 25
+        self._crossover_iterations: int = 10
         self._all_inputs = set()
         self._avg_prev_data = 0
         self.fitness_function: Union[
@@ -87,6 +89,42 @@ class EvoGFrame:
 
         return initial_population
 
+    def _crossover(self, parent1, parent2):
+        # generating the random number to perform crossover
+        # get number of rules (we assume that the grammars have the same nr of rules, but different probabilities)
+        n = len(parent1)
+        k = random.randint(1, n)
+        logging.info(f"Crossover point :{k}")
+    
+        parent1_list = list(parent1)
+        for rule_nr in range(k, len(parent1_list)):
+            # we need the number of the rule "rule_nr" to get the key name from the list
+            # get the name of the rule (left side of grammar)
+            rule_key = parent1_list[rule_nr]
+
+            # get the list of the values (the right side of the grammar)
+            array_of_values = parent1[rule_key]
+
+            # iterate through each value of the value array and check if it's a tuple
+            for elem_nr in range(0, len(array_of_values)):
+                # we need the number of the element in the array to get its value in the grammars lists later
+                current_val = array_of_values[elem_nr]
+
+                # if it's a tuple, the second element contains a probability
+                # if not, it's just a string with a rule, so there's nothing we can do there
+                if type(current_val) is tuple:
+                    p1 = parent1[rule_key][elem_nr]
+                    p2 = parent2[rule_key][elem_nr]
+                    # convert tuples into lists
+                    p1 = list(p1)
+                    p2 = list(p2)
+                    p1[1], p2[1] = p2[1], p1[1]
+                    # convert lists back to tuples and replace them in the grammars
+                    parent1[rule_key][elem_nr] = tuple(p1)
+                    parent2[rule_key][elem_nr] = tuple(p2)
+    
+        return parent1, parent2
+
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
         for inp in test_inputs:
@@ -114,6 +152,30 @@ class EvoGFrame:
         # mutate grammar
         mutated_grammar = self._mutate_grammar(probabilistic_grammar)
         self._probabilistic_grammars.append((mutated_grammar, GrammarType.MUTATED, -1))
+
+        # applying crossover on 2 random probabilistic or mutated grammars
+        if len(self._probabilistic_grammars) >= 2:
+            logging.info("Starting crossover")
+
+            # choose 2 random grammars from the list and remove them from it
+            parent1 = random.choice(self._probabilistic_grammars)
+            self._probabilistic_grammars.remove(parent1)
+            parent2 = random.choice(self._probabilistic_grammars)
+            self._probabilistic_grammars.remove(parent2)
+
+            # convert each tuple to list
+            parent1 = list(parent1)
+            generated_children = []
+            for i in range(self._crossover_iterations):
+                result1, result2 = self._crossover(parent1[0], parent2[0])
+                # save the generated grammars
+                generated_children.append(result1)
+                generated_children.append(result2)
+
+            # choose on of the children for the next generation
+            child = random.choice(generated_children)
+            self._probabilistic_grammars.append((child, GrammarType.MUTATED, -1))
+            mutated_grammar = child
 
         # generate new population
         return self._generate_input_files(mutated_grammar)
