@@ -1,6 +1,9 @@
-from typing import Dict, Set
+from abc import ABC, abstractmethod
+from typing import Dict, Set, Union
+from collections import defaultdict
 
 from evogfuzz.input import Input
+
 
 class Failure:
 
@@ -22,23 +25,26 @@ class Failure:
     def __str__(self):
         return self.__repr__()
 
-class FailureReport:
 
-    def __int__(self):
-        self.failures: Dict[Failure, Set[Input]] = dict()
+class Report(ABC):
 
-    def add_failure(self, exception: Exception, test_input: Input):
+    def __init__(self):
+        self.failures: Dict[Failure, Set[Input]] = defaultdict(set)
+
+    @abstractmethod
+    def get_failures(self):
+        raise NotImplementedError
 
 
+class FailureReport(Report):
 
+    def add_failure(self, failure: Union[Exception, Failure], test_input: Input):
+        if isinstance(failure, Exception):
+            failure = Failure(
+                failure
+            )
 
+        self.failures[failure].add(test_input)
 
-
-if __name__ == "__main__":
-    f1 = Failure(NotImplementedError("zero division error"))
-    f2 = Failure(NotImplementedError("zero division error"))
-    f3 = Failure(NotImplementedError("float zero division error"))
-    assert f1 == f2
-    assert f1 != f3
-    assert hash(f1) == hash(f2)
-    assert hash(f1) != hash(f3)
+    def get_failures(self):
+        return self.failures
