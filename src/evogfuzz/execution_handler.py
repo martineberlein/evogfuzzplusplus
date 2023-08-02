@@ -49,9 +49,7 @@ class SingleExecutionHandler(ExecutionHandler):
 
 
 class BatchExecutionHandler(ExecutionHandler):
-    def _get_label(
-        self, test_inputs: Set[Input]
-    ) -> List[Tuple[Input, TResultMonad]]:
+    def _get_label(self, test_inputs: Set[Input]) -> List[Tuple[Input, TResultMonad]]:
         results = self.oracle(test_inputs)
 
         return [

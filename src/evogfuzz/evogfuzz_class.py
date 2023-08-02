@@ -20,10 +20,7 @@ from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import get_transformed_grammar
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.report import (
-    MultipleFailureReport,
-    SingleFailureReport
-)
+from evogfuzz.report import MultipleFailureReport, SingleFailureReport
 from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 
 

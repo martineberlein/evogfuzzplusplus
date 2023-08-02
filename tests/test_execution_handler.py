@@ -1,15 +1,18 @@
 import unittest
-from typing import Set, Optional, Sequence, Tuple, List, Any, Union
+from typing import Set, Tuple, Union
 
 from isla.derivation_tree import DerivationTree
 from fuzzingbook.Parser import EarleyParser
 
-from evogfuzz.execution_handler import ExecutionHandler, SingleExecutionHandler, BatchExecutionHandler
+from evogfuzz.execution_handler import (
+    SingleExecutionHandler,
+    BatchExecutionHandler,
+)
 from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
-from evogfuzz.report import MultipleFailureReport, SingleFailureReport
+from evogfuzz.report import MultipleFailureReport
 
-from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, prop
+from evogfuzz_formalizations.calculator import grammar_alhazen as grammar
 
 
 def program(test_input: str):
@@ -44,7 +47,6 @@ def batch_oracle(test_inputs: Set[Input]):
 
 
 class TestExecutionHandler(unittest.TestCase):
-
     def setUp(self) -> None:
         inputs = {"sqrt(-900)", "cos(10)", "sin(1)"}
 
@@ -77,5 +79,5 @@ class TestExecutionHandler(unittest.TestCase):
             print(inp, inp.oracle)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

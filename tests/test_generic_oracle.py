@@ -28,7 +28,6 @@ def get_label(test_input) -> TResultMonad:
 
 
 class TestGenericOracle(unittest.TestCase):
-
     def test_generic_oracle(self):
         result = get_label("failure_1")
         label, exception = result.value()
@@ -48,5 +47,5 @@ class TestGenericOracle(unittest.TestCase):
         self.assertEqual(exception, None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

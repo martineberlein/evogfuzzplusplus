@@ -4,7 +4,6 @@ from evogfuzz.report import MultipleFailureReport, Failure, SingleFailureReport
 
 
 class TestFailureReport(unittest.TestCase):
-
     def test_single_failure_report(self):
         report = SingleFailureReport()
         report.add_failure("3")
@@ -43,5 +42,5 @@ class TestFailureReport(unittest.TestCase):
         assert len(report.get_all_failing_inputs()) == 3
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
