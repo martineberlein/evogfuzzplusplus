@@ -3,6 +3,7 @@ from typing import Generator, Optional, Dict
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.oracle import OracleResult
+from evogfuzz.report import Failure
 
 
 class Input:
@@ -16,6 +17,7 @@ class Input:
         self.__oracle: Optional[OracleResult] = oracle
         self.__features: Optional[Dict] = None
         self.__fitness: float = float()
+        self.__failure: Optional[Failure] = None
 
     @property
     def tree(self) -> DerivationTree:
