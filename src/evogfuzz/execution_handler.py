@@ -3,12 +3,16 @@ from typing import Callable, Union, Sequence, Optional, Set, List, Tuple
 
 from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
-from evogfuzz.report import TestResultMonad, Report
+from evogfuzz.report import TResultMonad, Report
 
 
 class ExecutionHandler(ABC):
-
-    def __init__(self, oracle: Callable[[Union[Input, str, Set[Input]]], Union[OracleResult, Sequence]]):
+    def __init__(
+        self,
+        oracle: Callable[
+            [Union[Input, str, Set[Input]]], Union[OracleResult, Sequence]
+        ],
+    ):
         self.oracle = oracle
 
     @staticmethod
@@ -22,7 +26,9 @@ class ExecutionHandler(ABC):
                 return False
 
     @staticmethod
-    def add_to_report(report: Report, test_input: Input, exception: Optional[Exception]):
+    def add_to_report(
+        report: Report, test_input: Input, exception: Optional[Exception]
+    ):
         report.add_failure(test_input, exception)
 
     @abstractmethod
@@ -31,9 +37,8 @@ class ExecutionHandler(ABC):
 
 
 class SingleExecutionHandler(ExecutionHandler):
-
-    def _get_label(self, test_input: Input) -> TestResultMonad:
-        return TestResultMonad(self.oracle(test_input))
+    def _get_label(self, test_input: Input) -> TResultMonad:
+        return TResultMonad(self.oracle(test_input))
 
     def label(self, test_inputs: Set[Input], report: Report, **kwargs):
         for inp in test_inputs:
@@ -44,11 +49,14 @@ class SingleExecutionHandler(ExecutionHandler):
 
 
 class BatchExecutionHandler(ExecutionHandler):
-
-    def _get_label(self, test_inputs: Set[Input]) -> List[Tuple[Input, TestResultMonad]]:
+    def _get_label(
+        self, test_inputs: Set[Input]
+    ) -> List[Tuple[Input, TResultMonad]]:
         results = self.oracle(test_inputs)
 
-        return [(inp, TestResultMonad(result)) for inp, result in zip(test_inputs, results)]
+        return [
+            (inp, TResultMonad(result)) for inp, result in zip(test_inputs, results)
+        ]
 
     def label(self, test_inputs: Set[Input], report: Report, **kwargs):
         test_results = self._get_label(test_inputs)

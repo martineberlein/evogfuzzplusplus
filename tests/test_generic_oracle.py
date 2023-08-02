@@ -1,8 +1,8 @@
 import unittest
-from typing import Set, Optional, Sequence, Tuple, List, Any, Union
+from typing import Tuple, Union
 
 from evogfuzz.oracle import OracleResult
-from evogfuzz.report import TestResultMonad
+from evogfuzz.report import TResultMonad
 
 
 def program(test_input: str):
@@ -23,8 +23,8 @@ def oracle(test_input: str) -> Union[Tuple[OracleResult, Exception], OracleResul
         return OracleResult.NO_BUG
 
 
-def get_label(test_input) -> TestResultMonad:
-    return TestResultMonad(oracle(test_input))
+def get_label(test_input) -> TResultMonad:
+    return TResultMonad(oracle(test_input))
 
 
 class TestGenericOracle(unittest.TestCase):

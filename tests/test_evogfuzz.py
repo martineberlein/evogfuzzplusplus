@@ -22,11 +22,11 @@ class TestEvoGFuzz(unittest.TestCase):
         evogfuzz = EvoGFuzz(
             grammar=grammar,
             oracle=prop,
-            inputs=initial_inputs,
+            inputs=["sqrt(-900)", "cos(12)"],
             fitness_function=fitness_function,
         )
         evogfuzz._setup()
-        self.assertTrue(True)
+        self.assertEqual(len(evogfuzz.report.get_all_failing_inputs()), 1)
 
     def test_evogfuzz_found_exceptions(self):
         evogfuzz = EvoGFuzz(
