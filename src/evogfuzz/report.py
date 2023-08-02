@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Set, Union
+from typing import Dict, Set, Union, List
 from collections import defaultdict
 
 from evogfuzz.input import Input
@@ -8,7 +8,7 @@ from evogfuzz.input import Input
 class Failure:
 
     def __init__(self, exception: Exception):
-        self.exception =  exception
+        self.exception = exception
         self.message = str(exception)
 
     def __hash__(self):
@@ -17,10 +17,13 @@ class Failure:
     def __eq__(self, other):
         if not isinstance(other, Failure):
             return False
-        return type(other.exception) == type(self.exception) and other.message == self.message
+        return isinstance(other.exception, type(self.exception)) and other.message == self.message
 
     def __repr__(self):
-        return f"{type(self.exception).__name__}: {self.message}"
+        if self.message:
+            return f"{type(self.exception).__name__}: {self.message}"
+        else:
+            return f"{type(self.exception).__name__}"
 
     def __str__(self):
         return self.__repr__()
@@ -32,19 +35,33 @@ class Report(ABC):
         self.failures: Dict[Failure, Set[Input]] = defaultdict(set)
 
     @abstractmethod
-    def get_failures(self):
+    def add_failure(self, test_input: Input, failure: Union[Exception, Failure], **kwargs):
         raise NotImplementedError
 
+    def get_failures(self) -> Dict[Failure, Set[Input]]:
+        return self.failures
 
-class FailureReport(Report):
+    def get_all_failing_inputs(self) -> List[Input]:
+        flat = []
+        for v in self.failures.values():
+            flat.extend(list(v))
+        return flat
 
-    def add_failure(self, failure: Union[Exception, Failure], test_input: Input):
+
+class SingleFailureReport(Report):
+
+    def add_failure(self, test_input: Input, failure=None, **kwargs):
+        self.failures[
+            Failure(Exception())
+        ].add(test_input)
+
+
+class MultipleFailureReport(Report):
+
+    def add_failure(self, test_input: Input, failure: Union[Exception, Failure], **kwargs):
         if isinstance(failure, Exception):
             failure = Failure(
                 failure
             )
 
         self.failures[failure].add(test_input)
-
-    def get_failures(self):
-        return self.failures
