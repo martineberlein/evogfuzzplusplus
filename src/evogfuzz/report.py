@@ -5,6 +5,17 @@ from collections import defaultdict
 from evogfuzz.input import Input
 
 
+class TestResultMonad:
+    def __init__(self, value):
+        self._value = (value, None) if not isinstance(value, tuple) else value
+
+    def map(self, func):
+        return TestResultMonad(func(*self._value))
+
+    def value(self):
+        return self._value
+
+
 class Failure:
 
     def __init__(self, exception: Exception):
@@ -33,6 +44,12 @@ class Report(ABC):
 
     def __init__(self):
         self.failures: Dict[Failure, Set[Input]] = defaultdict(set)
+
+    def __repr__(self):
+        return "\n".join(f"{failure}: {len(self.failures[failure])}" for failure in self.failures)
+
+    def __str__(self):
+        return self.__repr__()
 
     @abstractmethod
     def add_failure(self, test_input: Input, failure: Union[Exception, Failure], **kwargs):
