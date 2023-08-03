@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List, Union, Set, Tuple
+from typing import Callable, List, Union, Set, Tuple, Sequence
 from pathlib import Path
 from random import choice
 import numpy as np
@@ -9,18 +9,19 @@ from fuzzingbook.Grammars import Grammar
 from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     is_valid_probabilistic_grammar,
-    ProbabilisticGrammarMiner,
     ProbabilisticGrammarFuzzer,
 )
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-from evogfuzz import helper
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import get_transformed_grammar
+from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
+from evogfuzz.report import MultipleFailureReport, SingleFailureReport
+from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 
 
 class EvoGFrame:
@@ -29,14 +30,16 @@ class EvoGFrame:
     def __init__(
         self,
         grammar: Grammar,
-        oracle: Callable[[Union[Input, str]], OracleResult],
+        oracle: Callable[[Union[Input, str]], Union[OracleResult, Sequence]],
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
+        use_multi_failure_report: bool = True,
+        use_batch_execution: bool = False,
         working_dir: Path = None,
     ):
         self.grammar = grammar
-        self._oracle: Callable[[Input], OracleResult] = oracle
+        self._oracle: Callable[[Input], Union[OracleResult, Sequence]] = oracle
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Tuple[Grammar, GrammarType, float]] = []
         self._iteration: int = 0
@@ -48,18 +51,27 @@ class EvoGFrame:
         self._tournament_number: int = 25
         self._all_inputs = set()
         self._avg_prev_data = 0
-        self.fitness_function: Union[
-            Callable[
-                [Input],
-                float,
-            ],
-            None,
+        self.fitness_function: Callable[
+            [Input],
+            float,
         ] = fitness_function
 
         # Fuzzing
-        self.found_exceptions = set()
+        self.found_exceptions = set()  # TODO Remove
 
-        self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+        self.report = (
+            MultipleFailureReport()
+            if use_multi_failure_report
+            else SingleFailureReport()
+        )
+
+        self.execution_handler = (
+            BatchExecutionHandler(self._oracle)
+            if use_batch_execution
+            else SingleExecutionHandler(self._oracle)
+        )
+
+        self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
             EarleyParser(self.grammar)
         )
 
@@ -73,12 +85,8 @@ class EvoGFrame:
                 )
             )
 
-        # Apply patch to fuzzingbook
-        helper.patch()
-
     def _setup(self):
-        for inp in self.inputs:
-            inp.oracle = self._oracle(inp)
+        self.execution_handler.label(self.inputs, self.report)
 
         probabilistic_grammar = self._learn_probabilistic_grammar(self.inputs)
         self._probabilistic_grammars.append(
@@ -90,11 +98,7 @@ class EvoGFrame:
 
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
-        for inp in test_inputs:
-            label = self._oracle(inp)
-            if label == OracleResult.BUG:
-                self.found_exceptions.add(inp)
-            inp.oracle = label
+        self.execution_handler.label(test_inputs, self.report)
 
         # determine fitness of individuals
         for inp in test_inputs:
@@ -161,7 +165,7 @@ class EvoGFrame:
     def _learn_probabilistic_grammar(self, test_inputs: Set[Input], reset=True):
         logging.info("Learning new Grammar")
 
-        learning_trees = list(inp.tree for inp in test_inputs)
+        # learning_trees = list(inp.tree for inp in test_inputs)
         # print("\n new learning")
         # print(input_strings)
 
@@ -169,7 +173,7 @@ class EvoGFrame:
             self._probabilistic_grammar_miner.reset()
 
         probabilistic_grammar = (
-            self._probabilistic_grammar_miner.mine_probabilistic_grammar(learning_trees)
+            self._probabilistic_grammar_miner.mine_probabilistic_grammar(test_inputs)
         )
 
         assert is_valid_probabilistic_grammar(
@@ -225,10 +229,10 @@ class EvoGFrame:
             exit(-1)
 
     def get_found_exceptions_inputs(self) -> Set[Input]:
-        return self.found_exceptions
+        return set(self.report.get_all_failing_inputs())
 
     def get_found_exceptions_strings(self) -> Set[str]:
-        return {str(inp) for inp in self.get_found_exceptions_inputs()}
+        return {str(inp) for inp in self.report.get_all_failing_inputs()}
 
     def get_last_grammar(self):
         return self._get_latest_grammar()
@@ -308,7 +312,7 @@ class EvoGGen(EvoGFrame):
             )
 
             # Overwrite the Probabilistic Grammar Miner
-            self._probabilistic_grammar_miner = ProbabilisticGrammarMiner(
+            self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
                 EarleyParser(self.grammar)
             )
 
