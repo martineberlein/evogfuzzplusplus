@@ -51,7 +51,9 @@ def get_transformed_grammar_from_strings(
     parser = EarleyParser(grammar)
     for inp in test_inputs:
         for tree in parser.parse(inp):
-            extend_grammar(tree, transformed_grammar, recursive=recursive)
+            extend_grammar(
+                tree, transformed_grammar, recursive=recursive, original_grammar=grammar
+            )
 
     # Add dummy rule
     transformed_grammar = _add_dummy_rule(transformed_grammar)

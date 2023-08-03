@@ -43,13 +43,18 @@ class Failure:
 
 
 class Report(ABC):
-    def __init__(self):
+    def __init__(self, name: str = "EvoGFuzz"):
         self.failures: Dict[Failure, Set[Input]] = defaultdict(set)
+        self.name = name
 
     def __repr__(self):
-        return "\n".join(
+        report = f"Report for {self.name}\n"
+        report += f"Found {len(self.get_all_failing_inputs())} failure-inducing" \
+                  f" inputs ({len(self.failures.keys())} Exceptions):\n"
+        report += "\n".join(
             f"{failure}: {len(self.failures[failure])}" for failure in self.failures
         )
+        return report
 
     def __str__(self):
         return self.__repr__()

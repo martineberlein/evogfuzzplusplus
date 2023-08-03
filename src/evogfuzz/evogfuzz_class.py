@@ -18,7 +18,10 @@ from evogfuzz.fitness_functions import fitness_function_failure
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
-from evogfuzz.grammar_transformation import get_transformed_grammar
+from evogfuzz.grammar_transformation import (
+    get_transformed_grammar,
+    get_transformed_grammar_from_strings,
+)
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
 from evogfuzz.report import MultipleFailureReport, SingleFailureReport
 from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
@@ -36,6 +39,7 @@ class EvoGFrame:
         iterations: int = 10,
         use_multi_failure_report: bool = True,
         use_batch_execution: bool = False,
+        transform_grammar: bool = False,
         working_dir: Path = None,
     ):
         self.grammar = grammar
@@ -70,6 +74,11 @@ class EvoGFrame:
             if use_batch_execution
             else SingleExecutionHandler(self._oracle)
         )
+
+        if transform_grammar:
+            self.grammar = get_transformed_grammar_from_strings(
+                inputs, self.grammar, recursive=False
+            )
 
         self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
             EarleyParser(self.grammar)

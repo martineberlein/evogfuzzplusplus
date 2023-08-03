@@ -37,13 +37,19 @@ class ExecutionHandler(ABC):
 
 
 class SingleExecutionHandler(ExecutionHandler):
-    def _get_label(self, test_input: Input) -> TResultMonad:
+    def _get_label(self, test_input: Union[Input, str]) -> TResultMonad:
         return TResultMonad(self.oracle(test_input))
 
     def label(self, test_inputs: Set[Input], report: Report, **kwargs):
         for inp in test_inputs:
             label, exception = self._get_label(inp).value()
             inp.oracle = label
+            if self.map_result(label):
+                self.add_to_report(report, inp, exception)
+
+    def label_strings(self, test_inputs: Set[str], report: Report):
+        for inp in test_inputs:
+            label, exception = self._get_label(inp).value()
             if self.map_result(label):
                 self.add_to_report(report, inp, exception)
 
