@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List, Union, Set, Tuple, Optional, Sequence
+from typing import Callable, List, Union, Set, Tuple, Sequence
 from pathlib import Path
 from random import choice
 import numpy as np
@@ -51,12 +51,9 @@ class EvoGFrame:
         self._tournament_number: int = 25
         self._all_inputs = set()
         self._avg_prev_data = 0
-        self.fitness_function: Union[
-            Callable[
-                [Input],
-                float,
-            ],
-            None,
+        self.fitness_function: Callable[
+            [Input],
+            float,
         ] = fitness_function
 
         # Fuzzing
