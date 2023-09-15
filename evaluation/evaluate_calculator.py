@@ -6,6 +6,7 @@ from fuzzingbook.Grammars import Grammar, srange
 from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
+from subject import EvaluationSubject
 
 EXPR_GRAMMAR: Grammar = {
     "<start>": ["<expr>"],
@@ -43,6 +44,15 @@ def oracle(test_input: Input):
         return OracleResult.BUG, exp
     else:
         return OracleResult.NO_BUG
+
+
+class CalculatorSubject(EvaluationSubject):
+    name = "Calculator"
+
+    @classmethod
+    def build(cls):
+        return cls(EXPR_GRAMMAR, oracle, initial_inputs)
+
 
 
 if __name__ == "__main__":

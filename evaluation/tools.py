@@ -36,6 +36,7 @@ class GrammarBasedEvaluationTool(Tool, ABC):
         initial_inputs,
         max_nonterminals: int = 5,
         max_generated_inputs: int = 10000,
+        **kwargs
     ):
         super().__init__(grammar, oracle, initial_inputs)
         self.report = MultipleFailureReport(name=type(self).__name__)
@@ -89,7 +90,7 @@ class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
 
 class EvoGFuzzEvaluationTool(Tool):
 
-    def __init__(self, grammar, oracle, initial_inputs, max_iterations=100, transform_grammar=True):
+    def __init__(self, grammar, oracle, initial_inputs, max_iterations=100, transform_grammar=True, **kwargs):
         super().__init__(grammar, oracle, initial_inputs)
         self.max_iterations = max_iterations
         self.transform_grammar = transform_grammar
