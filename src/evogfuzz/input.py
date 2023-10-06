@@ -1,6 +1,7 @@
 from typing import Generator, Optional, Dict
 
 from isla.derivation_tree import DerivationTree
+from fuzzingbook.Parser import EarleyParser
 
 from evogfuzz.oracle import OracleResult
 
@@ -78,3 +79,12 @@ class Input:
             return self.tree
         else:
             return self.oracle
+
+    @classmethod
+    def from_str(cls, grammar, input_string, oracle: Optional[OracleResult] = None):
+        return cls(
+            DerivationTree.from_parse_tree(
+                next(EarleyParser(grammar).parse(input_string))
+            ),
+            oracle,
+        )
