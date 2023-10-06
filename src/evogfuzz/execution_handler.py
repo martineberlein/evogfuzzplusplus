@@ -27,7 +27,7 @@ class ExecutionHandler(ABC):
 
     @staticmethod
     def add_to_report(
-        report: Report, test_input: Input, exception: Optional[Exception]
+        report: Report, test_input: Union[Input, str], exception: Optional[Exception]
     ):
         report.add_failure(test_input, exception)
 
