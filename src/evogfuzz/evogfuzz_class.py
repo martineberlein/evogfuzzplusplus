@@ -109,6 +109,8 @@ class EvoGFrame:
         # obtain labels, execute samples (Initial Step, Activity 5)
         self.execution_handler.label(test_inputs, self.report)
 
+        test_inputs = set([inp for inp in test_inputs if inp.oracle != OracleResult.UNDEF])
+
         # determine fitness of individuals
         for inp in test_inputs:
             inp.fitness = self.fitness_function(inp)
