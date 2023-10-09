@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Type
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,7 +45,7 @@ class Tests4PyEvaluationSubject(EvaluationSubject):
         super().__init__(grammar, oracle, initial_inputs)
         self.project = project
         self.work_dir = work_dir
-        # self.setup()
+        self.setup()
 
     def setup(self) -> None:
         build_project(self.project, self.work_dir)
@@ -61,11 +61,30 @@ class Pysnooper2Tests4pyEvaluationSubject(Tests4PyEvaluationSubject):
         super().__init__(self.grammar, self.initial_inputs, self.project)
 
 
-if __name__ == '__main__':
-    p = Pysnooper2Tests4pyEvaluationSubject()
+@dataclass
+class Pysnooper3Tests4pyEvaluationSubject(Tests4PyEvaluationSubject):
+    project: Project = api.pysnooper_3
+    grammar = grammar_pysnooper
+    initial_inputs = ["-d1\n-ptest\n"]
 
-    print(p.get_evaluation_config())
-    config = p.get_evaluation_config()
-    oracle = config.get("oracle")
-    initial_inputs = config.get("initial_inputs")
-    print(oracle(initial_inputs[0]))
+    def __post_init__(self):
+        super().__init__(self.grammar, self.initial_inputs, self.project)
+
+
+if __name__ == '__main__':
+    subjects: List[Type[EvaluationSubject]] = [
+        Pysnooper2Tests4pyEvaluationSubject,
+        Pysnooper3Tests4pyEvaluationSubject,
+    ]
+
+    for subject in subjects:
+        print(subject.__name__)
+        subject = subject()
+        param = subject.get_evaluation_config()
+        print(param)
+
+    # print(p.get_evaluation_config())
+    # config = p.get_evaluation_config()
+    # oracle = config.get("oracle")
+    # initial_inputs = config.get("initial_inputs")
+    # print(oracle(initial_inputs[0]))
