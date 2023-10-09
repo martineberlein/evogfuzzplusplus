@@ -50,6 +50,7 @@ def map_result(result: TestResult) -> OracleResult:
 def run_project_from_dir(project_dir: Path, inp: Union[str, Input]) -> RunReport:
     """Run the project from the given directory with the provided input."""
     args = get_test_arguments(inp)
+    print(args)
     return api.run_project(project_dir, args, invoke_oracle=True)
 
 
@@ -61,7 +62,9 @@ def construct_oracle(
     def oracle(inp: Union[str, Input]) -> OracleResult:
         project_dir = work_dir / project.get_identifier()
         report: RunReport = run_project_from_dir(project_dir, inp)
-
+        print(report.test_result)
+        print(report.feedback)
+        print(report.successful)
         return (
             map_result(report.test_result) if report.successful else OracleResult.UNDEF
         )
@@ -89,9 +92,20 @@ def middle_1_test():
     assert oracle("1 2") == OracleResult.UNDEF
 
 
+def youtubedl_1_test():
+    """Test for the middle_1 project."""
+    project: Project = api.youtubedl_1
+    build_project(project)
+    oracle = construct_oracle(project)
+    assert oracle("-q !is_live\n-d {\\'is_live\\':False}") == OracleResult.BUG
+    assert oracle("-q \\'test>?0\\'\n-d {}") == OracleResult.NO_BUG
+    #assert oracle("1 2") == OracleResult.UNDEF
+
+
 if __name__ == "__main__":
     logger.LOGGER.setLevel(logging.ERROR)
 
     # Run tests
-    pysnooper_2_test()
+    #pysnooper_2_test()
     #middle_1_test()
+    youtubedl_1_test()

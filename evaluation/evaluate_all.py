@@ -19,7 +19,7 @@ if __name__ == "__main__":
         EvoGFuzzEvaluationTool
     ]
 
-    default_param = {"max_iterations": 60, "timeout": 3600, "log": True, "max_nonterminals": 5, "max_generated_inputs": 10000}
+    default_param = {"max_iterations": 20, "timeout": 3600, "log": True, "max_nonterminals": 5, "max_generated_inputs": 10000}
 
     results = dict()
     for subject in subjects:
