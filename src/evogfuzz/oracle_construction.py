@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Type, Optional
+from typing import Callable, Dict, Type, Optional, Tuple
 import signal
 from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
@@ -72,7 +72,7 @@ def _construct_functional_oracle(
     timeout: int,
     default_oracle_result: OracleResult,
 ):
-    def oracle(inp: Input) -> OracleResult:
+    def oracle(inp: Input) -> Tuple[OracleResult, Optional[Exception]]:
         param = list(map(int, str(inp).strip().split()))  # This might become a problem
         try:
             with ManageTimeout(timeout):
@@ -82,8 +82,8 @@ def _construct_functional_oracle(
             if expected_result != produced_result:
                 raise UnexpectedResultError("Results do not match")
         except Exception as e:
-            return error_definitions.get(type(e), default_oracle_result)
-        return OracleResult.NO_BUG
+            return error_definitions.get(type(e), default_oracle_result), e
+        return OracleResult.NO_BUG, None
 
     return oracle
 
