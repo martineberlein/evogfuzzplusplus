@@ -4,15 +4,31 @@ from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 
 
+import signal
+
 class ManageTimeout:
-    def __init__(self, timeout: int):
+    def __init__(self, timeout: float):
         self.timeout = timeout
 
     def __enter__(self):
-        set_alarm(self.timeout)
+        self.old_handler = signal.signal(signal.SIGALRM, self.alarm_handler)
+        self.set_alarm(self.timeout)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        cancel_alarm()
+        self.cancel_alarm()
+        signal.signal(signal.SIGALRM, self.old_handler)  # Restore old signal handler
+
+    @staticmethod
+    def alarm_handler(signum, frame):
+        raise TimeoutError("Function call timed out")
+
+    @staticmethod
+    def set_alarm(seconds: float):
+        signal.setitimer(signal.ITIMER_REAL, seconds)
+
+    @staticmethod
+    def cancel_alarm():
+        signal.setitimer(signal.ITIMER_REAL, 0)
 
 
 class UnexpectedResultError(Exception):
@@ -40,7 +56,7 @@ def construct_oracle(
     program_under_test: Callable,
     program_oracle: Optional[Callable],
     error_definitions: Optional[Dict[Type[Exception], OracleResult]] = None,
-    timeout: int = 1,
+    timeout: float = 1,
     default_oracle_result: OracleResult = OracleResult.UNDEF,
 ) -> Callable[[Input], OracleResult]:
     error_definitions = error_definitions or {}
@@ -69,7 +85,7 @@ def _construct_functional_oracle(
     program_under_test: Callable,
     program_oracle: Callable,
     error_definitions: Dict[Type[Exception], OracleResult],
-    timeout: int,
+    timeout: float,
     default_oracle_result: OracleResult,
 ):
     def oracle(inp: Input) -> Tuple[OracleResult, Optional[Exception]]:

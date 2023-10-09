@@ -110,5 +110,24 @@ class TestConstructOracle(unittest.TestCase):
         self.assertEqual(my_oracle(Input.from_str(grammar, "1 1")), OracleResult.BUG)
 
 
+    def test_timeout_sleep_fraction(self):
+        def oracle(x, y):
+            return x + y
+
+        def under_test(x, y):
+            import time
+
+            time.sleep(2)
+            return x + y
+
+        my_oracle = construct_oracle(
+            under_test,
+            oracle,
+            {TimeoutError: OracleResult.BUG},
+            timeout=0.5,
+        )
+        self.assertEqual(my_oracle(Input.from_str(grammar, "1 1")), OracleResult.BUG)
+
+
 if __name__ == "__main__":
     unittest.main()
