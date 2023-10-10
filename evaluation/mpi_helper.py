@@ -145,8 +145,7 @@ def load_module_dynamically(
 
 
 def main():
-    factory = MPITestSubjectFactory(MiddleTestSubject)
-    subjects = factory.build()
+    subjects = MPITestSubjectFactory(MiddleTestSubject).build()
     for subject in subjects:
         oracle = subject.to_dict().get("oracle")
         for inp in subject.default_test_inputs:
