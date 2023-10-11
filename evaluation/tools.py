@@ -15,10 +15,14 @@ class Tool(ABC):
         self.oracle = oracle
         self.grammar = grammar
         self.initial_inputs = initial_inputs
+        self.generated_inputs = set()
 
     @abstractmethod
     def run(self) -> Report:
         raise NotImplementedError
+
+    def get_generated_inputs(self):
+        return self.generated_inputs
 
 
 class GrammarBasedEvaluationTool(Tool, ABC):
@@ -48,6 +52,7 @@ class GrammarBasedEvaluationFuzzer(GrammarBasedEvaluationTool):
             test_inputs.add(fuzzer.fuzz())
 
         self.execution_handler.label_strings(test_inputs, self.report)
+        self.generated_inputs = test_inputs
         return self.report
 
 
@@ -66,11 +71,11 @@ class InputsFromHellEvaluationFuzzer(GrammarBasedEvaluationTool):
             test_inputs.add(fuzzer.fuzz())
 
         self.execution_handler.label_strings(test_inputs, self.report)
+        self.generated_inputs = test_inputs
         return self.report
 
 
 class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
-
     def run(self) -> Report:
         fuzzer = GrammarFuzzer(self.grammar, max_nonterminals=self.max_nonterminals)
 
@@ -79,12 +84,20 @@ class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
             test_inputs.add(fuzzer.fuzz())
 
         self.execution_handler.label_strings(test_inputs, self.report)
+        self.generated_inputs = test_inputs
         return self.report
 
 
 class EvoGFuzzEvaluationTool(Tool):
-
-    def __init__(self, grammar, oracle, initial_inputs, max_iterations=100, transform_grammar=True, **kwargs):
+    def __init__(
+        self,
+        grammar,
+        oracle,
+        initial_inputs,
+        max_iterations=100,
+        transform_grammar=True,
+        **kwargs
+    ):
         super().__init__(grammar, oracle, initial_inputs)
         self.max_iterations = max_iterations
         self.transform_grammar = transform_grammar
@@ -95,7 +108,9 @@ class EvoGFuzzEvaluationTool(Tool):
             self.oracle,
             self.initial_inputs,
             iterations=self.max_iterations,
-            transform_grammar=self.transform_grammar
+            transform_grammar=self.transform_grammar,
         )
         _ = evogfuzz.fuzz()
+
+        self.generated_inputs = evogfuzz.get_all_inputs()
         return evogfuzz.report

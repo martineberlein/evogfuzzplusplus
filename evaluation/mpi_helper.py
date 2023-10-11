@@ -1,9 +1,10 @@
 import importlib.util
 import sys
-from typing import Union, Type, List, Callable, Dict
+from typing import Union, Type, List, Callable, Dict, Tuple, Set
 from pathlib import Path
 from abc import ABC
 import string
+from fuzzingbook.Coverage import Coverage, Location, BranchCoverage
 
 from fuzzingbook.Grammars import Grammar
 from evogfuzz.oracle import OracleResult
@@ -26,7 +27,7 @@ class TestSubject:
         return {
             "grammar": self.grammar,
             "oracle": self.oracle,
-            "inputs": self.test_inputs,
+            "initial_inputs": self.test_inputs,
         }
 
 
@@ -34,6 +35,10 @@ class MPITestSubject(TestSubject, ABC):
     base_path: str
     implementation_class_name: str = "Solution"
     implementation_function_name: str
+
+    def __init__(self, oracle, bug_id):
+        super().__init__(oracle=oracle)
+        self.bug_id = bug_id
 
     @classmethod
     def ground_truth(cls) -> Callable:
@@ -43,6 +48,21 @@ class MPITestSubject(TestSubject, ABC):
             cls.implementation_class_name,
             cls.implementation_function_name,
         )
+
+    def get_implementation(self) -> Callable:
+        imp_file_path = self.base_path / Path(f"prog_{self.bug_id}/buggy.py")
+
+        func = load_module_dynamically(
+            imp_file_path,
+            self.implementation_class_name,
+            self.implementation_function_name,
+        )
+
+        def harness_function(inp: str):
+            param = list(map(int, str(inp).strip().split()))
+            return func(*param)
+
+        return harness_function
 
 
 class GCDTestSubject(MPITestSubject):
@@ -123,7 +143,7 @@ class MPITestSubjectFactory:
                 default_oracle_result=def_oracle,
                 timeout=0.01,
             )
-            subjects.append(self.test_subject_type(oracle=oracle))
+            subjects.append(self.test_subject_type(oracle=oracle, bug_id=i))
         return subjects
 
 
@@ -141,15 +161,62 @@ def load_module_dynamically(
     spec.loader.exec_module(module)
     your_class = getattr(module, class_name)
     function = getattr(your_class(), function_name)
+
     return function
+
+
+def population_coverage(
+    population: List[Tuple[int, int]], function: Callable
+) -> Tuple[Set[Location], List[int]]:
+    cumulative_coverage: List[int] = []
+    all_coverage: Set[Location] = set()
+
+    for s in population:
+        with Coverage() as cov:
+            try:
+                function(s)
+            except:
+                pass
+        filtered_set = {
+            (func, line)
+            for (func, line) in cov.coverage()
+            if "derivation_tree" not in func and "input" not in func
+        }
+        all_coverage |= filtered_set
+        cumulative_coverage.append(len(all_coverage))
+
+    return all_coverage, cumulative_coverage
+
+
+def population_branch_coverage(
+    population: List[Tuple[int, int]], function: Callable
+) -> Tuple[Set[Location], List[int]]:
+    cumulative_coverage: List[int] = []
+    all_coverage: Set[Location] = set()
+
+    for s in population:
+        with BranchCoverage() as cov:
+            try:
+                function(s)
+            except:
+                pass
+        filtered_set = {
+            (x, y)
+            for (x, y) in cov.coverage()
+            if "derivation_tree" not in x[0] and y[0] and "input" not in x[0] and y[0]
+        }
+        all_coverage |= filtered_set
+        cumulative_coverage.append(len(all_coverage))
+
+    return all_coverage, cumulative_coverage
 
 
 def main():
     subjects = MPITestSubjectFactory(MiddleTestSubject).build()
     for subject in subjects:
-        oracle = subject.to_dict().get("oracle")
-        for inp in subject.default_test_inputs:
-            print(oracle(inp))
+        param = subject.to_dict()
+        orc = subject.get_implementation()
+        print(population_coverage(param.get("initial_inputs"), orc))
 
 
 if __name__ == "__main__":
