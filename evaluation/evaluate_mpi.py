@@ -14,12 +14,15 @@ from mpi_helper import (
 
 def main():
     mpi_subject_types: List[Type[MPITestSubject]] = [
-        SquareRootTestSubject
-        # GCDTestSubject,
+        #SquareRootTestSubject
+        GCDTestSubject,
         # MiddleTestSubject
     ]
 
-    tools: List[Type[Tool]] = [InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool]
+    tools: List[Type[Tool]] = [
+        InputsFromHellEvaluationFuzzer,
+        EvoGFuzzEvaluationTool
+    ]
 
     for subject_type in mpi_subject_types:
         subjects = MPITestSubjectFactory(subject_type).build()
