@@ -7,6 +7,7 @@ from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
 from subject import EvaluationSubject
+from mpi_helper import population_coverage, population_branch_coverage
 
 EXPR_GRAMMAR: Grammar = {
     "<start>": ["<expr>"],
@@ -24,13 +25,14 @@ EXPR_GRAMMAR: Grammar = {
         "<integer>.<integer>",
         "<integer>",
     ],
-    "<function_name>": ["<char>", "<char><function_name>"],
+    "<function_name>": ["<char>", "<char><function_name>", "sqrt", "tan", "sin", "cos"],
     "<char>": [] + srange(string.ascii_lowercase),
     "<integer>": ["<digit><integer>", "<digit>"],
     "<digit>": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
 }
 
 initial_inputs = ["1 / 2", "sqrt(4)", "tan(1)", "sin(-13)", "1 - 1"]
+
 
 def oracle(test_input: Input):
     try:
@@ -54,7 +56,6 @@ class CalculatorSubject(EvaluationSubject):
         return cls(EXPR_GRAMMAR, oracle, initial_inputs)
 
 
-
 if __name__ == "__main__":
     tools = [
         GrammarBasedEvaluationFuzzer,
@@ -68,3 +69,4 @@ if __name__ == "__main__":
     for evaluation_tool in tools:
         tool = evaluation_tool(*param)
         print(tool.run(), end="\n\n")
+        print(f"Generated {len(tool.generated_inputs)} inputs.")
