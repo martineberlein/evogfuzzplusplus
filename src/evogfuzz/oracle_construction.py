@@ -6,6 +6,7 @@ from evogfuzz.input import Input
 
 import signal
 
+
 class ManageTimeout:
     def __init__(self, timeout: float):
         self.timeout = timeout
@@ -58,6 +59,7 @@ def construct_oracle(
     error_definitions: Optional[Dict[Type[Exception], OracleResult]] = None,
     timeout: float = 1,
     default_oracle_result: OracleResult = OracleResult.UNDEF,
+    harness_function: Callable = None,
 ) -> Callable[[Input], OracleResult]:
     error_definitions = error_definitions or {}
     default_oracle_result = (
@@ -78,6 +80,7 @@ def construct_oracle(
         error_definitions,
         timeout,
         default_oracle_result,
+        harness_function
     )
 
 
@@ -87,9 +90,12 @@ def _construct_functional_oracle(
     error_definitions: Dict[Type[Exception], OracleResult],
     timeout: float,
     default_oracle_result: OracleResult,
+    harness_function: Callable,
 ):
     def oracle(inp: Input) -> Tuple[OracleResult, Optional[Exception]]:
-        param = list(map(int, str(inp).strip().split()))  # This might become a problem
+        # param = list(map(int, str(inp).strip().split()))  # This might become a problem
+        param = harness_function(str(inp)) if harness_function else str(inp)
+
         try:
             with ManageTimeout(timeout):
                 produced_result = program_under_test(*param)
@@ -109,11 +115,13 @@ def _construct_failure_oracle(
     error_definitions: Dict[Type[Exception], OracleResult],
     timeout: int,
     default_oracle_result: OracleResult,
+    harness_function: Callable,
 ):
     def oracle(inp: Input) -> OracleResult:
+        param = harness_function(str(inp)) if harness_function else str(inp)
         try:
             with ManageTimeout(timeout):
-                program_under_test(str(inp))
+                program_under_test(*param)
         except Exception as e:
             return error_definitions.get(type(e), default_oracle_result)
         return OracleResult.NO_BUG
