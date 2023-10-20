@@ -84,15 +84,16 @@ class Question1RefactoryTestSubject(RefactoryTestSubject):
         "<start>": ["<input>"],
         "<input>": ["<first>, <second>"],
         "<first>": ["<integer>"],
-        "<second>": ["()", "(<integer><list>)"],
+        "<second>": ["()", "[]", "(<integer>, <integer><list>)", "[<integer><list>]"],
         "<list>": ["", ", <integer><list>"],
-        "<integer>": ["<one_nine><maybe_digits>"],
+        "<integer>": ["<maybe_minus><one_nine><maybe_digits>"],
+        "<maybe_minus>": ["", "-"],  #
         "<one_nine>": [str(num) for num in range(1, 10)],
         "<digit>": list(string.digits),
         "<maybe_digits>": ["", "<digits>"],
         "<digits>": ["<digit>", "<digit><digits>"],
     }
-    default_test_inputs = ["42, (-5, 1, 3, 5, 7, 10)", "5, ()"]
+    default_test_inputs = ["42, (-5, 1, 3, 5, 7, 10)", "3, (1, 5, 10)"]
 
     @classmethod
     def harness_function(cls, input_str: str):
@@ -114,17 +115,18 @@ class RefactoryTestSubjectFactory:
         self,
         err_def: Dict[Exception, OracleResult] = None,
         default_oracle: OracleResult = None,
+        solution_type: str = "wrong",
     ) -> List[RefactoryTestSubject]:
         subjects = []
 
-        subject_path = Path(self.test_subject_type.base_path) / Path("wrong")
+        subject_path = Path(self.test_subject_type.base_path) / Path(solution_type)
         num_files = len(list(subject_path.absolute().glob(f"*.py")))
 
         for i in range(1, num_files):
             formatted_str = str(i).zfill(3)
 
             try:
-                subject = self._build_subject(formatted_str, err_def, default_oracle)
+                subject = self._build_subject(formatted_str, err_def, default_oracle, solution_type)
                 subjects.append(subject)
             except Exception as e:
                 print(f"Subject {formatted_str} could not be build.")
@@ -136,11 +138,12 @@ class RefactoryTestSubjectFactory:
         formatted_bug_id: str,
         err_def: Dict[Exception, OracleResult] = None,
         default_oracle: OracleResult = None,
+        solution_type: str = "wrong",
     ):
 
         reference = self.test_subject_type.ground_truth()
         subject = self.test_subject_type(
-            oracle=lambda _: None, bug_id=formatted_bug_id, solution_type="wrong"
+            oracle=lambda _: None, bug_id=formatted_bug_id, solution_type=solution_type
         )
         implementation = subject.get_implementation()
 
@@ -153,7 +156,7 @@ class RefactoryTestSubjectFactory:
             error_def,
             default_oracle_result=def_oracle,
             timeout=0.01,
-            harness_function=subject.harness_function
+            harness_function=subject.harness_function,
         )
         subject.oracle = oracle
 
@@ -359,22 +362,27 @@ def main():
 
 
 def main2():
-    subject = Question1RefactoryTestSubject(
-        oracle=lambda x: OracleResult.BUG, bug_id="003", solution_type="wrong"
-    )
-    ref = subject.ground_truth()
-    print(ref(5, ()))
-    orc = subject.get_implementation()
-    print(orc(5, ()))
+
+    sub_types = [
+        Question1RefactoryTestSubject,
+    ]
 
     factory = RefactoryTestSubjectFactory(Question1RefactoryTestSubject)
-    subjects = factory.build()
+    subjects = factory.build(solution_type="fail")
     for subject in subjects:
         print(subject.bug_id)
         orc = subject.to_dict().get("oracle")
         inputs = subject.to_dict().get("initial_inputs")
         for inp in inputs:
             print(orc(inp))
+
+
+def main3():
+    from fuzzingbook.GrammarFuzzer import GrammarFuzzer
+
+    fuzzer = GrammarFuzzer(Question1RefactoryTestSubject.default_grammar)
+    for _ in range(30):
+        print(fuzzer.fuzz())
 
 
 if __name__ == "__main__":
