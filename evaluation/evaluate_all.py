@@ -1,9 +1,8 @@
 from typing import List, Type
 
-from subject import EvaluationSubject
-from tools import Tool, GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
-from evaluate_calculator import CalculatorSubject
-from subject import Pysnooper2Tests4pyEvaluationSubject
+from evaluation.tests4py.subject import EvaluationSubject
+from tools import Tool, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool
+from evaluation.tests4py.subject import Pysnooper2Tests4pyEvaluationSubject
 
 
 if __name__ == "__main__":

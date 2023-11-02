@@ -1,7 +1,7 @@
 from typing import List, Type
 
 from tools import Tool, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool
-from mpi_helper import (
+from subjects import (
     Question1RefactoryTestSubject,
     RefactoryTestSubjectFactory,
     RefactoryTestSubject,
