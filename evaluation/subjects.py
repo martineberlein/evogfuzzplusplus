@@ -10,10 +10,9 @@ from fuzzingbook.Coverage import Coverage, Location, BranchCoverage
 from fuzzingbook.Grammars import Grammar
 from evogfuzz.oracle import OracleResult
 from evogfuzz.oracle_construction import construct_oracle
-from evogfuzz.input import Input
 
 
-class TestSubject:
+class TestSubject(ABC):
     def __init__(self, grammar=None, oracle=None, test_inputs=None):
         self.grammar = grammar or self.default_grammar
         self.oracle = oracle or self.default_oracle()
@@ -65,16 +64,10 @@ class RefactoryTestSubject(TestSubject):
         imp_dir_path = self.base_path / Path(self.solution_type)
         imp_file_path = list(imp_dir_path.absolute().glob(f"*{self.bug_id}.py"))[0]
 
-        func = load_object_dynamically(
+        return load_object_dynamically(
             imp_file_path,
             self.implementation_function_name,
         )
-
-        # def implementation(inp: Input):
-        #     param = self.harness_function(str(inp))
-        #     return func(*param)
-
-        return func
 
 
 class Question1RefactoryTestSubject(RefactoryTestSubject):
@@ -173,6 +166,11 @@ class MPITestSubject(TestSubject, ABC):
         self.bug_id = bug_id
 
     @classmethod
+    def harness_function(cls, input_str: str):
+        param = list(map(int, str(input_str).strip().split()))
+        return param
+
+    @classmethod
     def ground_truth(cls) -> Callable:
         solution_file_path = cls.base_path / Path("reference1.py")
         return load_function_from_class(
@@ -184,17 +182,11 @@ class MPITestSubject(TestSubject, ABC):
     def get_implementation(self) -> Callable:
         imp_file_path = self.base_path / Path(f"prog_{self.bug_id}/buggy.py")
 
-        func = load_function_from_class(
+        return load_function_from_class(
             imp_file_path,
             self.implementation_class_name,
             self.implementation_function_name,
         )
-
-        def harness_function(inp: str):
-            param = list(map(int, str(inp).strip().split()))
-            return func(*param)
-
-        return harness_function
 
 
 class GCDTestSubject(MPITestSubject):
@@ -257,26 +249,50 @@ class MPITestSubjectFactory:
         default_oracle: OracleResult = None,
     ) -> List[MPITestSubject]:
         subjects = []
+
         for i in range(1, 11):
-            buggy_file_path = self.test_subject_type.base_path / Path(
+            subject_path = self.test_subject_type.base_path / Path(
                 f"prog_{i}/buggy.py"
             )
-            loaded_function = load_function_from_class(
-                buggy_file_path,
-                self.test_subject_type.implementation_class_name,
-                self.test_subject_type.implementation_function_name,
-            )
-            error_def = err_def or {TimeoutError: OracleResult.UNDEF}
-            def_oracle = default_oracle or OracleResult.BUG
-            oracle = construct_oracle(
-                loaded_function,
-                self.test_subject_type.ground_truth(),
-                error_def,
-                default_oracle_result=def_oracle,
-                timeout=0.01,
-            )
-            subjects.append(self.test_subject_type(oracle=oracle, bug_id=i))
+
+            try:
+                subject = self._build_subject(subject_path, i, err_def, default_oracle)
+                subjects.append(subject)
+            except Exception as e:
+                print(f"Subject {subject_path} could not be built.")
+
         return subjects
+
+
+    def _build_subject(
+        self,
+        subject_path,
+        bug_id,
+        err_def: Dict[Exception, OracleResult] = None,
+        default_oracle: OracleResult = None,
+    ) -> MPITestSubject:
+
+        reference = self.test_subject_type.ground_truth()
+
+        loaded_function = load_function_from_class(
+            subject_path,
+            self.test_subject_type.implementation_class_name,
+            self.test_subject_type.implementation_function_name,
+        )
+
+        error_def = err_def or {TimeoutError: OracleResult.UNDEF}
+        def_oracle = default_oracle or OracleResult.BUG
+
+        oracle = construct_oracle(
+            loaded_function,
+            reference,
+            error_def,
+            default_oracle_result=def_oracle,
+            timeout=0.01,
+            harness_function=self.test_subject_type.harness_function
+        )
+        subject = self.test_subject_type(oracle=oracle, bug_id=bug_id)
+        return subject
 
 
 def load_module_dynamically(path: Union[str, Path]):
@@ -356,9 +372,12 @@ def population_branch_coverage(
 def main():
     subjects = MPITestSubjectFactory(MiddleTestSubject).build()
     for subject in subjects:
+        print(subject.ground_truth()(1, 4 ,3))
         param = subject.to_dict()
-        orc = subject.get_implementation()
-        print(population_coverage(param.get("initial_inputs"), orc))
+        implementation = subject.get_implementation()
+        print(implementation(1, 4, 3))
+        print(subject.oracle("1 4 3"))
+        # print(population_coverage(param.get("initial_inputs"), orc))
 
 
 def main2():

@@ -6,8 +6,7 @@ from fuzzingbook.Grammars import Grammar, srange
 from evogfuzz.input import Input
 from evogfuzz.oracle import OracleResult
 from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
-from subject import EvaluationSubject
-from mpi_helper import population_coverage, population_branch_coverage
+from evaluation.tests4py.subject import EvaluationSubject
 
 EXPR_GRAMMAR: Grammar = {
     "<start>": ["<expr>"],
