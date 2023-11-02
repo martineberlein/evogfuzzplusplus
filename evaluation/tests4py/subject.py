@@ -1,14 +1,12 @@
 from typing import Optional, Dict, List, Type
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
 
 from tests4py import api
 from tests4py.projects import Project
-from tests4py.api.test import RunReport
-from tests4py.api.report import TestReport
 
-from tests4py_api import construct_oracle, DEFAULT_WORK_DIR, build_project
+from evaluation.tests4py.tests4py_api import construct_oracle, DEFAULT_WORK_DIR, build_project
 from evogfuzz_formalizations.tests4py import grammar_pysnooper
 
 
