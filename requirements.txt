@@ -1,6 +1,7 @@
 numpy~=1.24.0
 setuptools~=65.5.1
-matplotlib~=3.6.2
+matplotlib~=3.8.0
 isla-solver~=1.10.0
 debugging_benchmark
 jupyter
+pandas~=1.5.3
