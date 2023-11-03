@@ -36,7 +36,7 @@ def construct_oracle(
         error_definitions,
         timeout,
         default_oracle_result,
-        harness_function
+        harness_function,
     )
 
 
