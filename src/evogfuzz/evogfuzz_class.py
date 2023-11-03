@@ -25,6 +25,7 @@ from evogfuzz.grammar_transformation import (
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
 from evogfuzz.report import MultipleFailureReport, SingleFailureReport
 from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
+from evogfuzz.timeout_manager import ManageTimeout
 
 
 class EvoGFrame:
@@ -131,8 +132,15 @@ class EvoGFrame:
         mutated_grammar = self._mutate_grammar(probabilistic_grammar)
         self._probabilistic_grammars.append((mutated_grammar, GrammarType.MUTATED, -1))
 
-        # generate new population
-        return self._generate_input_files(mutated_grammar)
+        try:
+            with ManageTimeout(2):
+                # generate new population
+                new_inputs = self._generate_input_files(mutated_grammar)
+        except TimeoutError:
+            logging.info("Timeout while generating new Inputs!")
+            new_inputs = self.inputs
+
+        return new_inputs
 
     def _do_more_iterations(self):
         if -1 == self._max_iterations:
