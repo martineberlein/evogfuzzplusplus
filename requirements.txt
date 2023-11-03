@@ -1,6 +1,7 @@
 numpy~=1.24.0
 fuzzingbook~=1.1
 setuptools~=65.5.1
-matplotlib~=3.6.2
+matplotlib~=3.8.0
 isla-solver~=1.10.0
 jupyter
+pandas~=1.5.3
