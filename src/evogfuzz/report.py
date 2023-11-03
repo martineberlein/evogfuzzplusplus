@@ -76,6 +76,15 @@ class Report(ABC):
             flat.extend(list(v))
         return flat
 
+    def to_dict_complete(self):
+        return self.failures
+
+    def to_dict(self):
+        result = dict()
+        for failure in self.failures:
+            result[failure] = len(self.failures[failure])
+        return result
+
 
 class SingleFailureReport(Report):
     def add_failure(self, test_input: Input, failure=None, **kwargs):
