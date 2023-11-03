@@ -11,6 +11,8 @@ from debugging_framework.probalistic_grammar_miner import ProbabilisticGrammarMi
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
 class Tool(ABC):
+    name: str
+
     def __init__(self, grammar, oracle, initial_inputs):
         self.oracle = oracle
         self.grammar = grammar
@@ -44,6 +46,8 @@ class GrammarBasedEvaluationTool(Tool, ABC):
 
 
 class GrammarBasedEvaluationFuzzer(GrammarBasedEvaluationTool):
+    name = "GrammarBasedFuzzer"
+
     def run(self) -> Report:
         fuzzer = GrammarFuzzer(self.grammar, max_nonterminals=self.max_nonterminals)
 
@@ -57,6 +61,8 @@ class GrammarBasedEvaluationFuzzer(GrammarBasedEvaluationTool):
 
 
 class InputsFromHellEvaluationFuzzer(GrammarBasedEvaluationTool):
+    name = "InputsFromHellFuzzer"
+
     def run(self) -> Report:
         prob_grammar = ProbabilisticGrammarMiner(
             EarleyParser(self.grammar)
@@ -76,6 +82,8 @@ class InputsFromHellEvaluationFuzzer(GrammarBasedEvaluationTool):
 
 
 class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
+    name = "ISLaGrammarBasedFuzzer"
+
     def run(self) -> Report:
         fuzzer = GrammarFuzzer(self.grammar, max_nonterminals=self.max_nonterminals)
 
@@ -89,6 +97,8 @@ class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
 
 
 class EvoGFuzzEvaluationTool(Tool):
+    name = "EvoGFuzz"
+
     def __init__(
         self,
         grammar,
@@ -114,3 +124,41 @@ class EvoGFuzzEvaluationTool(Tool):
 
         self.generated_inputs = evogfuzz.get_all_inputs()
         return evogfuzz.report
+
+
+class ReproducerTool:
+    def __init__(self, grammar, oracle, initial_inputs):
+        self.oracle = oracle
+        self.grammar = grammar
+        self.initial_inputs = initial_inputs
+
+    @abstractmethod
+    def run(self) -> Grammar:
+        raise NotImplementedError
+
+
+class EvoGGenEvaluationTool(ReproducerTool):
+    def __init__(
+        self,
+        grammar,
+        oracle,
+        initial_inputs,
+        max_iterations=100,
+        transform_grammar=True,
+        **kwargs
+    ):
+        super().__init__(grammar, oracle, initial_inputs)
+        self.max_iterations = max_iterations
+        self.transform_grammar = transform_grammar
+
+    def run(self) -> Grammar:
+        evoggen = EvoGGen(
+            self.grammar,
+            self.oracle,
+            self.initial_inputs,
+            iterations=self.max_iterations,
+            transform_grammar=self.transform_grammar,
+        )
+        grammar, _ = evoggen.optimize()
+
+        return grammar

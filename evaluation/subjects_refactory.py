@@ -97,7 +97,9 @@ class RefactoryTestSubjectFactory(TestSubjectFactory):
             formatted_str = str(i).zfill(3)
 
             try:
-                subject = self._build_subject(formatted_str, err_def, default_oracle, solution_type)
+                subject = self._build_subject(
+                    formatted_str, err_def, default_oracle, solution_type
+                )
                 subjects.append(subject)
             except Exception as e:
                 print(f"Subject {formatted_str} could not be build.")
@@ -111,7 +113,6 @@ class RefactoryTestSubjectFactory(TestSubjectFactory):
         default_oracle: OracleResult = None,
         solution_type: str = "wrong",
     ):
-
         reference = self.test_subject_type.ground_truth()
         subject = self.test_subject_type(
             oracle=lambda _: None, bug_id=formatted_bug_id, solution_type=solution_type
@@ -133,8 +134,8 @@ class RefactoryTestSubjectFactory(TestSubjectFactory):
 
         return subject
 
-def main():
 
+def main():
     sub_types = [
         Question1RefactoryTestSubject,
     ]
