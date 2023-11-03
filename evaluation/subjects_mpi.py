@@ -11,13 +11,14 @@ from subjects import TestSubject, TestSubjectFactory, load_function_from_class
 
 
 class MPITestSubject(TestSubject, ABC):
+    name: str
     base_path: str
     implementation_class_name: str = "Solution"
     implementation_function_name: str
 
     def __init__(self, oracle, bug_id):
         super().__init__(oracle=oracle)
-        self.bug_id = bug_id
+        self.id = bug_id
 
     @classmethod
     def harness_function(cls, input_str: str):
@@ -34,7 +35,7 @@ class MPITestSubject(TestSubject, ABC):
         )
 
     def get_implementation(self) -> Callable:
-        imp_file_path = self.base_path / Path(f"prog_{self.bug_id}/buggy.py")
+        imp_file_path = self.base_path / Path(f"prog_{self.id}/buggy.py")
 
         return load_function_from_class(
             imp_file_path,
@@ -44,6 +45,7 @@ class MPITestSubject(TestSubject, ABC):
 
 
 class GCDTestSubject(MPITestSubject):
+    name = "GCD"
     base_path = Path("./resources/mpi/problem_1_GCD")
     implementation_function_name = "gcd"
     default_grammar: Grammar = {
@@ -61,6 +63,7 @@ class GCDTestSubject(MPITestSubject):
 
 
 class SquareRootTestSubject(MPITestSubject):
+    name = "SquareRoot"
     base_path = Path("./resources/mpi/problem_10_Square-root")
     implementation_function_name = "floorSqrt"
     default_grammar: Grammar = {
@@ -76,6 +79,7 @@ class SquareRootTestSubject(MPITestSubject):
 
 
 class MiddleTestSubject(MPITestSubject):
+    name = "Middle"
     base_path = Path("./resources/mpi/problem_7_Middle-of-Three")
     implementation_function_name = "middle"
     default_grammar: Grammar = {
@@ -94,8 +98,8 @@ class MiddleTestSubject(MPITestSubject):
 
 
 class MPITestSubjectFactory(TestSubjectFactory):
-    def __init__(self, test_subject_type: Type[MPITestSubject]):
-        self.test_subject_type = test_subject_type
+    def __init__(self, test_subject_types: List[Type[MPITestSubject]]):
+        self.test_subject_types = test_subject_types
 
     def build(
         self,
@@ -104,34 +108,33 @@ class MPITestSubjectFactory(TestSubjectFactory):
     ) -> List[MPITestSubject]:
         subjects = []
 
-        for i in range(1, 11):
-            subject_path = self.test_subject_type.base_path / Path(
-                f"prog_{i}/buggy.py"
-            )
-
-            try:
-                subject = self._build_subject(subject_path, i, err_def, default_oracle)
-                subjects.append(subject)
-            except Exception as e:
-                print(f"Subject {subject_path} could not be built.")
+        for subject_type in self.test_subject_types:
+            for subject_id in range(1, 11):
+                try:
+                    subject = self._build_subject(
+                        subject_type, subject_id, err_def, default_oracle
+                    )
+                    subjects.append(subject)
+                except Exception as e:
+                    print(f"Subject {subject_id} could not be built.")
 
         return subjects
 
-
     def _build_subject(
         self,
-        subject_path,
-        bug_id,
+        subject_type,
+        subject_id,
         err_def: Dict[Exception, OracleResult] = None,
         default_oracle: OracleResult = None,
     ) -> MPITestSubject:
+        subject_path = subject_type.base_path / Path(f"prog_{subject_id}/buggy.py")
 
-        reference = self.test_subject_type.ground_truth()
+        reference = subject_type.ground_truth()
 
         loaded_function = load_function_from_class(
             subject_path,
-            self.test_subject_type.implementation_class_name,
-            self.test_subject_type.implementation_function_name,
+            subject_type.implementation_class_name,
+            subject_type.implementation_function_name,
         )
 
         error_def = err_def or {TimeoutError: OracleResult.UNDEF}
@@ -143,20 +146,17 @@ class MPITestSubjectFactory(TestSubjectFactory):
             error_def,
             default_oracle_result=def_oracle,
             timeout=0.01,
-            harness_function=self.test_subject_type.harness_function
+            harness_function=subject_type.harness_function,
         )
-        subject = self.test_subject_type(oracle=oracle, bug_id=bug_id)
+        subject = subject_type(oracle=oracle, bug_id=subject_id)
         return subject
 
 
 def main():
-    subjects = MPITestSubjectFactory(MiddleTestSubject).build()
+    subjects = MPITestSubjectFactory([GCDTestSubject]).build()
     for subject in subjects:
-        print(subject.ground_truth()(1, 4 ,3))
+        print(f"Subject {subject.id}")
         param = subject.to_dict()
-        implementation = subject.get_implementation()
-        print(implementation(1, 4, 3))
-        print(subject.oracle("1 4 3"))
         oracle = param.get("oracle")
         for inp in param.get("initial_inputs"):
             print(inp, oracle(inp))

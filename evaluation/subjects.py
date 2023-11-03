@@ -8,6 +8,9 @@ from fuzzingbook.Coverage import Coverage, Location, BranchCoverage
 
 
 class TestSubject(ABC):
+    name: str
+    id: int
+
     def __init__(self, grammar=None, oracle=None, test_inputs=None):
         self.grammar = grammar or self.default_grammar
         self.oracle = oracle or self.default_oracle()
@@ -28,7 +31,6 @@ class TestSubject(ABC):
 
 
 class TestSubjectFactory(ABC):
-
     @abstractmethod
     def build(self) -> List[TestSubject]:
         raise NotImplementedError
