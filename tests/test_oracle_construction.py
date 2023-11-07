@@ -1,5 +1,5 @@
 import unittest
-from evogfuzz.oracle_construction import (
+from debugging_framework.oracle_construction import (
     construct_oracle,
     OracleResult,
     Input,
@@ -25,8 +25,8 @@ grammar: Grammar = {
 class TestConstructOracle(unittest.TestCase):
     def setUp(self):
         self.error_definitions = {
-            UnexpectedResultError: OracleResult.BUG,
-            TimeoutError: OracleResult.UNDEF,
+            UnexpectedResultError: OracleResult.FAILING,
+            TimeoutError: OracleResult.UNDEFINED,
         }
         self.harness_function = lambda inp: list(map(int, str(inp).strip().split()))
 
@@ -44,7 +44,7 @@ class TestConstructOracle(unittest.TestCase):
             harness_function=self.harness_function,
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.NO_BUG)
+        self.assertEqual(oracle_result, OracleResult.PASSING)
 
     def test_different_result(self):
         def oracle(x, y):
@@ -60,7 +60,7 @@ class TestConstructOracle(unittest.TestCase):
             harness_function=self.harness_function,
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
     def test_defined_exception(self):
         def oracle(x, y):
@@ -76,7 +76,7 @@ class TestConstructOracle(unittest.TestCase):
             harness_function=self.harness_function,
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.UNDEF)
+        self.assertEqual(oracle_result, OracleResult.UNDEFINED)
 
     def test_undefined_exception(self):
         def oracle(x, y):
@@ -92,7 +92,7 @@ class TestConstructOracle(unittest.TestCase):
             harness_function=self.harness_function,
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.UNDEF)
+        self.assertEqual(oracle_result, OracleResult.UNDEFINED)
 
     def test_timeout_sleep(self):
         def oracle(x, y):
@@ -107,13 +107,13 @@ class TestConstructOracle(unittest.TestCase):
         my_oracle = construct_oracle(
             under_test,
             oracle,
-            {TimeoutError: OracleResult.BUG},
+            {TimeoutError: OracleResult.FAILING},
             timeout=1,
             harness_function=self.harness_function,
         )
 
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
     def test_no_error_definition(self):
         def oracle(x, y):
@@ -135,7 +135,7 @@ class TestConstructOracle(unittest.TestCase):
             under_test, oracle, harness_function=self.harness_function
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
         my_oracle = construct_oracle(
             under_test_unexpected_result_error,
@@ -143,13 +143,13 @@ class TestConstructOracle(unittest.TestCase):
             harness_function=self.harness_function,
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
         my_oracle = construct_oracle(
             under_test_timeout, oracle, harness_function=self.harness_function
         )
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
     def test_timeout_sleep_fraction(self):
         def oracle(x, y):
@@ -164,13 +164,13 @@ class TestConstructOracle(unittest.TestCase):
         my_oracle = construct_oracle(
             under_test,
             oracle,
-            {TimeoutError: OracleResult.BUG},
+            {TimeoutError: OracleResult.FAILING},
             timeout=0.5,
             harness_function=self.harness_function,
         )
 
         oracle_result, _ = my_oracle(Input.from_str(grammar, "1 1"))
-        self.assertEqual(oracle_result, OracleResult.BUG)
+        self.assertEqual(oracle_result, OracleResult.FAILING)
 
 
 if __name__ == "__main__":

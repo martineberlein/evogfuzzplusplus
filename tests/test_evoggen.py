@@ -5,9 +5,11 @@ from itertools import product
 from fuzzingbook.Grammars import Grammar, is_valid_grammar
 from fuzzingbook.Parser import EarleyParser, tree_to_string
 
+from debugging_framework.input import Input
+from debugging_framework.oracle import OracleResult
+
+
 from evogfuzz.evogfuzz_class import EvoGGen
-from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
 
 
 def oracle(inp: Input | str):
@@ -18,9 +20,9 @@ def oracle(inp: Input | str):
             return False
 
     try:
-        return OracleResult.BUG if program(inp) else OracleResult.NO_BUG
+        return OracleResult.FAILING if program(inp) else OracleResult.PASSING
     except SyntaxError:
-        return OracleResult.UNDEF
+        return OracleResult.UNDEFINED
 
 
 grammar: Grammar = {
@@ -40,11 +42,11 @@ def oracle_2(inp: Input | str):
 
     try:
         program(str(inp))
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING
     except AssertionError:
-        return OracleResult.BUG
+        return OracleResult.FAILING
     except SyntaxError:
-        return OracleResult.UNDEF
+        return OracleResult.UNDEFINED
 
 
 grammar_2: Grammar = {
@@ -71,8 +73,8 @@ class TestEvoGGen(unittest.TestCase):
             for tree in parser.parse(inp):
                 assert inp == tree_to_string(tree=tree)
 
-        assert oracle(initial_inputs[0]) == OracleResult.BUG
-        assert oracle(initial_inputs[1]) == OracleResult.NO_BUG
+        assert oracle(initial_inputs[0]) == OracleResult.FAILING
+        assert oracle(initial_inputs[1]) == OracleResult.PASSING
 
         # Case #2: oracle_2, grammar_2, and initial_inputs_2
         assert is_valid_grammar(grammar=grammar_2)
@@ -82,8 +84,8 @@ class TestEvoGGen(unittest.TestCase):
             for tree in parser.parse(inp):
                 assert inp == tree_to_string(tree=tree)
 
-        assert oracle_2(initial_inputs_2[0]) == OracleResult.BUG
-        assert oracle_2(initial_inputs_2[1]) == OracleResult.NO_BUG
+        assert oracle_2(initial_inputs_2[0]) == OracleResult.FAILING
+        assert oracle_2(initial_inputs_2[1]) == OracleResult.PASSING
 
     def test_evoggen(self):
         expected_grammar: Grammar = {

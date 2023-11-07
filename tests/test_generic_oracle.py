@@ -1,8 +1,8 @@
 import unittest
 from typing import Tuple, Union
 
-from evogfuzz.oracle import OracleResult
-from evogfuzz.report import TResultMonad
+from debugging_framework.oracle import OracleResult
+from debugging_framework.report import TResultMonad
 
 
 def program(test_input: str):
@@ -18,9 +18,9 @@ def oracle(test_input: str) -> Union[Tuple[OracleResult, Exception], OracleResul
     try:
         program(test_input)
     except Exception as exp:
-        return OracleResult.BUG, exp
+        return OracleResult.FAILING, exp
     else:
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING
 
 
 def get_label(test_input) -> TResultMonad:

@@ -4,11 +4,9 @@ from fuzzingbook.Parser import EarleyParser, is_valid_grammar, tree_to_string, G
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.input import Input
-from evogfuzz_formalizations.calculator import (
-    grammar_alhazen as grammar_3,
-    initial_inputs as initial_inputs_3,
-)
+
+from debugging_framework.input import Input
+from debugging_benchmark.calculator.calculator import grammar, initial_inputs
 
 
 class TestProbabilisticLearner(unittest.TestCase):
@@ -48,20 +46,20 @@ class TestProbabilisticLearner(unittest.TestCase):
             print(rule.ljust(30) + str(probabilistic_grammar[rule]))
 
     def test_probabilistic_miner_new(self):
-        grammar: Grammar = {
+        grammar_maybe_minus: Grammar = {
             "<start>": ["<number>"],
             "<number>": ["<maybe_minus><one_nine>"],
             "<maybe_minus>": ["-", ""],
             "<one_nine>": [str(i) for i in range(1, 10)],
         }
-        assert is_valid_grammar(grammar=self.grammar)
-        initial_inputs = ["-8", "-9"]
+        assert is_valid_grammar(grammar=grammar_maybe_minus)
+        initial_inputs_maybe_minus = ["-8", "-9"]
 
         probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
-            EarleyParser(grammar)
+            EarleyParser(grammar_maybe_minus)
         )
         probabilistic_grammar = probabilistic_grammar_miner.mine_probabilistic_grammar(
-            initial_inputs
+            initial_inputs_maybe_minus
         )
 
         expected = {
@@ -83,14 +81,14 @@ class TestProbabilisticLearner(unittest.TestCase):
         self.assertEqual(expected, probabilistic_grammar)
 
     def test_extended_probabilistic_miner(self):
-        e_parser = EarleyParser(grammar=grammar_3)
+        e_parser = EarleyParser(grammar=grammar)
 
         test_inputs = set()
-        for inp_ in initial_inputs_3:
+        for inp_ in initial_inputs:
             test_inputs.add(
                 Input(
                     DerivationTree.from_parse_tree(
-                        next(EarleyParser(grammar_3).parse(inp_))
+                        next(EarleyParser(grammar).parse(inp_))
                     )
                 )
             )
@@ -127,9 +125,9 @@ class TestProbabilisticLearner(unittest.TestCase):
             "<maybe_frac>": [("", {"prob": 1.0}), (".<digits>", {"prob": 0.0})],
             "<maybe_minus>": [("", {"prob": 0.5}), ("-", {"prob": 0.5})],
             "<number>": [
-                ("<maybe_minus><onenine><maybe_digits><maybe_frac>", {"prob": None})
+                ("<maybe_minus><one_nine><maybe_digits><maybe_frac>", {"prob": None})
             ],
-            "<onenine>": [
+            "<one_nine>": [
                 ("1", {"prob": 0.5}),
                 ("2", {"prob": 0.0}),
                 ("3", {"prob": 0.0}),

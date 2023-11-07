@@ -5,7 +5,7 @@ from fuzzingbook.Grammars import Grammar, is_nonterminal, is_valid_grammar
 from fuzzingbook.Parser import EarleyParser
 from fuzzingbook.GrammarFuzzer import tree_to_string
 
-from evogfuzz.input import Input
+from debugging_framework.input import Input
 
 
 def extend_grammar(derivation_tree, grammar, original_grammar, recursive: bool = True):

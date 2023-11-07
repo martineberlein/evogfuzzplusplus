@@ -2,11 +2,11 @@ from typing import List, Union, Set, Tuple, Optional, Any
 
 from fuzzingbook.Grammars import Grammar, Expansion
 from fuzzingbook.GrammarFuzzer import all_terminals
-from fuzzingbook.Parser import Parser, EarleyParser
+from fuzzingbook.Parser import Parser
 from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner
 from isla.derivation_tree import DerivationTree
 
-from evogfuzz.input import Input
+from debugging_framework.input import Input
 
 
 def expansion_key(

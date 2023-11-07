@@ -3,7 +3,9 @@ import unittest
 from fuzzingbook.Grammars import EXPR_GRAMMAR
 from fuzzingbook.Parser import EarleyParser
 from isla.derivation_tree import DerivationTree
-from evogfuzz.input import Input
+
+from debugging_framework.input import Input
+
 from evogfuzz.grammar_transformation import get_transformed_grammar
 
 
