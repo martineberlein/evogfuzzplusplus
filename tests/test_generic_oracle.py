@@ -1,7 +1,6 @@
 import unittest
 from typing import Tuple, Union
 
-#from evogfuzz.oracle import OracleResult
 from debugging_framework.oracle import OracleResult
 from debugging_framework.report import TResultMonad
 

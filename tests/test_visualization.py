@@ -1,11 +1,8 @@
 import unittest
 
+from debugging_benchmark.calculator.calculator import grammar, initial_inputs, oracle
+
 from evogfuzz import EvoGFuzz
-from evogfuzz_formalizations.calculator import (
-    grammar_alhazen as grammar,
-    initial_inputs,
-    prop,
-)
 from evogfuzz.visualization import parse_prob_grammars, plot
 
 ITERATIONS = 3
@@ -14,7 +11,7 @@ ITERATIONS = 3
 class TestEvoGFuzzVisualization(unittest.TestCase):
     def setUp(self) -> None:
         self.evogfuzz = EvoGFuzz(
-            grammar=grammar, oracle=prop, inputs=initial_inputs, iterations=ITERATIONS
+            grammar=grammar, oracle=oracle, inputs=initial_inputs, iterations=ITERATIONS
         )
         self.evogfuzz.fuzz()
         self.all_prob_grammars = self.evogfuzz._probabilistic_grammars

@@ -7,7 +7,7 @@ from debugging_framework.helper import tree_to_string
 
 from isla.parser import EarleyParser
 
-from evogfuzz.input import Input
+from debugging_framework.input import Input
 
 
 def extend_grammar(derivation_tree, grammar, original_grammar, recursive: bool = True):

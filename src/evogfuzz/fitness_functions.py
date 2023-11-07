@@ -1,7 +1,5 @@
+from debugging_framework.input import Input
 from debugging_framework.oracle import OracleResult
-
-from evogfuzz.input import Input
-#from evogfuzz.oracle import OracleResult
 
 
 def fitness_function_failure(test_input: Input) -> float:

@@ -12,6 +12,7 @@ from isla.parser import EarleyParser
 
 from evogfuzz.evogfuzz_class import EvoGGen
 
+
 def oracle(inp: Input | str):
     def program(inp_):
         if eval(str(inp_)) <= -8:
