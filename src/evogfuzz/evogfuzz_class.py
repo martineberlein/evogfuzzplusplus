@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List, Union, Set, Tuple, Sequence
+from typing import Callable, List, Union, Set, Tuple, Sequence, Optional
 from pathlib import Path
 from random import choice
 import numpy as np
@@ -109,10 +109,12 @@ class EvoGFrame:
 
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
+        logging.info("Executing new Inputs.")
         self.execution_handler.label(test_inputs, self.report)
 
         test_inputs = set([inp for inp in test_inputs if inp.oracle != OracleResult.UNDEFINED])
 
+        logging.info("Determining Fitness.")
         # determine fitness of individuals
         for inp in test_inputs:
             inp.fitness = self.fitness_function(inp)
@@ -120,15 +122,18 @@ class EvoGFrame:
         for inp in test_inputs:
             self._all_inputs.add(inp)
 
+        logging.info("Selecting best Inputs.")
         # select fittest individuals
         fittest_individuals: Set[Input] = self._select_fittest_individuals(test_inputs)
 
+        logging.info("Learning new probabilistic Grammar.")
         # learn new probabilistic grammar
         probabilistic_grammar = self._learn_probabilistic_grammar(fittest_individuals)
         self._probabilistic_grammars.append(
             (deepcopy(probabilistic_grammar), GrammarType.LEARNED, -1)
         )
 
+        logging.info("Mutating Grammar.")
         # mutate grammar
         mutated_grammar = self._mutate_grammar(probabilistic_grammar)
         self._probabilistic_grammars.append((mutated_grammar, GrammarType.MUTATED, -1))
@@ -297,7 +302,7 @@ class EvoGGen(EvoGFrame):
     def __init__(
         self,
         grammar: Grammar,
-        oracle: Callable[[Union[Input, str]], OracleResult],
+        oracle: Callable[[Union[Input, str]], Tuple[OracleResult, Optional[Exception]]],
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
@@ -315,7 +320,7 @@ class EvoGGen(EvoGFrame):
 
     def _setup(self):
         for inp in self.inputs:
-            inp.oracle = self._oracle(inp)
+            inp.oracle, _ = self._oracle(inp)
 
         self.failure_inducing_inputs.update(
             {inp for inp in self.inputs if inp.oracle == OracleResult.FAILING}
@@ -384,7 +389,7 @@ class EvoGGen(EvoGFrame):
         new_inputs.update(self._generate_input_files(mutated_grammar))
 
         for inp in new_inputs:
-            label = self._oracle(inp)
+            label, _ = self._oracle(inp)
             inp.oracle = label
 
         return new_inputs
