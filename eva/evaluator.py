@@ -56,10 +56,6 @@ class ReproducerEvaluation(Evaluation):
             param = {
                 **subject.to_dict(),
                 ** self.tool_param,
-                "initial_inputs": [
-                    "-d=7 -p='test' -w='e.nest2' -c=bool=str,int=str -O ",
-                    "-o -d=7 -p='1' -w='e.nest2' -c=bool=str,int=str -T ",
-                ],
             }
 
             for tool in self.tools:

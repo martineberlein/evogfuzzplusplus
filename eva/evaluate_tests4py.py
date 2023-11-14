@@ -3,7 +3,6 @@ import logging
 
 from debugging_benchmark.tests4py_benchmark import (
     PysnooperBenchmarkRepository,
-    BenchmarkRepository,
 )
 
 from debugging_framework.tools import Tool
