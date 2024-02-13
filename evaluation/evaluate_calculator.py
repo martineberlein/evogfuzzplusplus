@@ -4,7 +4,8 @@ import string
 from fuzzingbook.Grammars import Grammar, srange
 
 from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
+#from evogfuzz.oracle import OracleResult
+from debugging_framework.oracle import OracleResult
 from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
 
 EXPR_GRAMMAR: Grammar = {
@@ -38,11 +39,11 @@ def oracle(test_input: Input):
             {"sqrt": math.sqrt, "cos": math.cos, "sin": math.sin, "tan": math.tan},
         )
     except NameError:
-        return OracleResult.UNDEF, NameError()
+        return OracleResult.UNDEFINED, NameError()
     except Exception as exp:
-        return OracleResult.BUG, exp
+        return OracleResult.FAILING, exp
     else:
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING
 
 
 if __name__ == "__main__":

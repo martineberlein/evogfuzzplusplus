@@ -4,7 +4,8 @@ from isla.derivation_tree import DerivationTree
 from fuzzingbook.Parser import EarleyParser, is_valid_grammar, Grammar
 
 from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, prop
-from evogfuzz.oracle import OracleResult
+from debugging_framework.oracle import OracleResult
+#from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 
 
@@ -24,7 +25,7 @@ class TestInputs(unittest.TestCase):
 
     def test_test_inputs(self):
         inputs = {"sqrt(-900)", "cos(10)"}
-        oracles = [OracleResult.BUG, OracleResult.NO_BUG]
+        oracles = [OracleResult.FAILING, OracleResult.PASSING]
         test_inputs = set()
         for inp, oracle in zip(inputs, oracles):
             test_input = Input(

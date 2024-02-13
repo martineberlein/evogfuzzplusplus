@@ -3,7 +3,8 @@ import logging
 
 from fuzzingbook.Grammars import Grammar
 
-from evogfuzz.oracle import OracleResult
+from debugging_framework.oracle import OracleResult
+#from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 
 
@@ -23,12 +24,12 @@ def prop_(inp: Input) -> bool:
 
 def prop(inp: Input) -> OracleResult:
     try:
-        return OracleResult.BUG if prop_(inp) else OracleResult.NO_BUG
+        return OracleResult.FAILING if prop_(inp) else OracleResult.PASSING
     except SyntaxError:
         logging.info(
             f"Input {str(inp)} is not a valid input of the program. You might want to rewrite your grammar!"
         )
-        return OracleResult.UNDEF
+        return OracleResult.UNDEFINED
 
 
 grammar: Grammar = {

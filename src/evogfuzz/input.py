@@ -3,28 +3,20 @@ from typing import Generator, Optional, Dict
 from isla.derivation_tree import DerivationTree
 from fuzzingbook.Parser import EarleyParser
 
-from evogfuzz.oracle import OracleResult
+from debugging_framework.oracle import OracleResult
+from debugging_framework.input import Input as TestInput
 
 
-class Input:
+class Input(TestInput):
     """
     Class describing a test input.
     """
 
     def __init__(self, tree: DerivationTree, oracle: OracleResult = None):
         assert isinstance(tree, DerivationTree)
-        self.__tree: DerivationTree = tree
-        self.__oracle: Optional[OracleResult] = oracle
+        super().__init__(tree, oracle)
         self.__features: Optional[Dict] = None
         self.__fitness: float = float()
-
-    @property
-    def tree(self) -> DerivationTree:
-        return self.__tree
-
-    @property
-    def oracle(self) -> OracleResult:
-        return self.__oracle
 
     @property
     def features(self) -> Dict:
@@ -33,10 +25,6 @@ class Input:
     @property
     def fitness(self) -> float:
         return self.__fitness
-
-    @oracle.setter
-    def oracle(self, oracle_: OracleResult):
-        self.__oracle = oracle_
 
     @features.setter
     def features(self, features_: Dict):

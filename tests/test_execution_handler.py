@@ -4,14 +4,15 @@ from typing import Set, Tuple, Union
 from isla.derivation_tree import DerivationTree
 from fuzzingbook.Parser import EarleyParser
 
-from evogfuzz.execution_handler import (
+from debugging_framework.execution_handler import (
     SingleExecutionHandler,
     BatchExecutionHandler,
 )
-from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
-from evogfuzz.report import MultipleFailureReport
+from debugging_framework.oracle import OracleResult
+from debugging_framework.report import MultipleFailureReport
 
+
+from evogfuzz.input import Input
 from evogfuzz_formalizations.calculator import grammar_alhazen as grammar
 
 
@@ -28,9 +29,9 @@ def oracle(test_input: str) -> Union[Tuple[OracleResult, Exception], OracleResul
     try:
         program(str(test_input))
     except Exception as exp:
-        return OracleResult.BUG, exp
+        return OracleResult.FAILING, exp
     else:
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING
 
 
 def batch_oracle(test_inputs: Set[Input]):
@@ -39,9 +40,9 @@ def batch_oracle(test_inputs: Set[Input]):
         try:
             program(str(inp))
         except Exception as exp:
-            result.append((OracleResult.BUG, exp))
+            result.append((OracleResult.FAILING, exp))
         else:
-            result.append((OracleResult.NO_BUG, None))
+            result.append((OracleResult.PASSING, None))
 
     return result
 

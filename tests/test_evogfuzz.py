@@ -7,7 +7,7 @@ from evogfuzz_formalizations.calculator import (
     initial_inputs,
     prop,
 )
-from evogfuzz.oracle import OracleResult
+from debugging_framework.oracle import OracleResult
 from evogfuzz.fitness_functions import fitness_function_failure as fitness_function
 
 
@@ -37,7 +37,7 @@ class TestEvoGFuzz(unittest.TestCase):
         )
         found_exceptions = evogfuzz.fuzz()
         self.assertTrue(
-            all([True for inp in found_exceptions if inp.oracle == OracleResult.BUG])
+            all([True for inp in found_exceptions if inp.oracle == OracleResult.FAILING])
         )
 
 

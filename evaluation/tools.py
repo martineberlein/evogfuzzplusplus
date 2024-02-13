@@ -11,10 +11,14 @@ from isla.fuzzer import GrammarFuzzer as ISLaGrammarFuzzer
 
 from evogfuzz.evogfuzz_class import EvoGFuzz
 from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
-from evogfuzz.execution_handler import SingleExecutionHandler
 
-from evogfuzz.report import MultipleFailureReport, Report
+from debugging_framework.oracle import OracleResult
+from debugging_framework.report import MultipleFailureReport, Report
+#from evogfuzz.oracle import OracleResult
+from debugging_framework.execution_handler import SingleExecutionHandler
+
+#from evogfuzz.report import MultipleFailureReport, Report
+
 
 
 class Tool(ABC):

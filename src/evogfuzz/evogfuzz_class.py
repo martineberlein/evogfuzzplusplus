@@ -12,10 +12,13 @@ from fuzzingbook.ProbabilisticGrammarFuzzer import (
     ProbabilisticGrammarFuzzer,
 )
 from isla.derivation_tree import DerivationTree
+from debugging_framework.oracle import OracleResult
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-from evogfuzz.oracle import OracleResult
+
+#from evogfuzz.oracle import OracleResult
+#from debugging_framework.input import Input
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import (
@@ -23,8 +26,9 @@ from evogfuzz.grammar_transformation import (
     get_transformed_grammar_from_strings,
 )
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.report import MultipleFailureReport, SingleFailureReport
-from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
+from debugging_framework.report import MultipleFailureReport, SingleFailureReport
+#from evogfuzz.report import MultipleFailureReport, SingleFailureReport
+from debugging_framework.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 
 
 class EvoGFrame:
@@ -109,7 +113,7 @@ class EvoGFrame:
         # obtain labels, execute samples (Initial Step, Activity 5)
         self.execution_handler.label(test_inputs, self.report)
 
-        test_inputs = set([inp for inp in test_inputs if inp.oracle != OracleResult.UNDEF])
+        test_inputs = set([inp for inp in test_inputs if inp.oracle != OracleResult.UNDEFINED])
 
         # determine fitness of individuals
         for inp in test_inputs:
@@ -309,11 +313,11 @@ class EvoGGen(EvoGFrame):
             inp.oracle = self._oracle(inp)
 
         self.failure_inducing_inputs.update(
-            {inp for inp in self.inputs if inp.oracle == OracleResult.BUG}
+            {inp for inp in self.inputs if inp.oracle == OracleResult.FAILING}
         )
 
         assert True in set(
-            True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
+            True if inp.oracle == OracleResult.FAILING else False for inp in self.inputs
         ), "EvoGGen needs at least one bug-triggering input."
 
         if self.transform_grammar:
@@ -338,7 +342,7 @@ class EvoGGen(EvoGFrame):
             logging.info(f"Starting Iteration {self._iteration}")
             generated_inputs = self._optimize_loop(new_test_inputs)
             new_test_inputs = {
-                inp for inp in generated_inputs if inp.oracle == OracleResult.BUG
+                inp for inp in generated_inputs if inp.oracle == OracleResult.FAILING
             }
             self.failure_inducing_inputs.update(new_test_inputs)
             self._iteration = self._iteration + 1

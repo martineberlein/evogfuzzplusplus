@@ -1,6 +1,6 @@
 import unittest
 
-from evogfuzz.report import MultipleFailureReport, Failure, SingleFailureReport
+from debugging_framework.report import MultipleFailureReport, Failure, SingleFailureReport
 
 
 class TestFailureReport(unittest.TestCase):
