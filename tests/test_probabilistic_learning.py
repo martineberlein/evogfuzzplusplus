@@ -1,10 +1,14 @@
 import unittest
 
-from fuzzingbook.Parser import EarleyParser, is_valid_grammar, tree_to_string, Grammar
+from isla.parser import EarleyParser
 from isla.derivation_tree import DerivationTree
 
+from debugging_framework.grammar import is_valid_grammar
+from debugging_framework.helper import tree_to_string
+from debugging_framework.types import Grammar
+from debugging_framework.input import Input
+
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.input import Input
 from evogfuzz_formalizations.calculator import (
     grammar_alhazen as grammar_3,
     initial_inputs as initial_inputs_3,

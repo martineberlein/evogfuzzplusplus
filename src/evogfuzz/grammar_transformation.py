@@ -1,9 +1,10 @@
 import copy
 from typing import Set, List
 
-from fuzzingbook.Grammars import Grammar, is_nonterminal, is_valid_grammar
-from fuzzingbook.Parser import EarleyParser
-from fuzzingbook.GrammarFuzzer import tree_to_string
+from debugging_framework.types import Grammar
+from debugging_framework.grammar import is_nonterminal, is_valid_grammar
+from debugging_framework.helper import tree_to_string
+from isla.parser import EarleyParser
 
 from evogfuzz.input import Input
 

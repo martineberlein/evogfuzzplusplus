@@ -1,12 +1,13 @@
 from typing import List, Union, Set, Tuple, Optional, Any
 
-from fuzzingbook.Grammars import Grammar, Expansion
-from fuzzingbook.GrammarFuzzer import all_terminals
-from fuzzingbook.Parser import Parser, EarleyParser
-from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner
+from debugging_framework.types import Grammar, Expansion
+from debugging_framework.grammar import all_terminals
+from debugging_framework.input import Input
+
+from isla.parser import Parser
 from isla.derivation_tree import DerivationTree
 
-from evogfuzz.input import Input
+from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner
 
 
 def expansion_key(

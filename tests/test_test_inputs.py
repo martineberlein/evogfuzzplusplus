@@ -1,13 +1,14 @@
 import unittest
 
 from isla.derivation_tree import DerivationTree
-from fuzzingbook.Parser import EarleyParser, is_valid_grammar, Grammar
+from isla.parser import EarleyParser
+
+from debugging_framework.grammar import is_valid_grammar
+from debugging_framework.types import Grammar
+from debugging_framework.oracle import OracleResult
+from debugging_framework.input import Input
 
 from evogfuzz_formalizations.calculator import grammar_alhazen as grammar, prop
-from debugging_framework.oracle import OracleResult
-#from evogfuzz.oracle import OracleResult
-from evogfuzz.input import Input
-
 
 class TestInputs(unittest.TestCase):
     def setUp(self) -> None:

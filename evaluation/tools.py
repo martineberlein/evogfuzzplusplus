@@ -1,25 +1,19 @@
 from abc import ABC, abstractmethod
 
-from fuzzingbook.Grammars import Grammar, srange
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from fuzzingbook.ProbabilisticGrammarFuzzer import (
     ProbabilisticGrammarMiner,
     ProbabilisticGrammarFuzzer,
 )
-from fuzzingbook.Parser import EarleyParser
+from isla.parser import EarleyParser
+
+#hier werden beide importiert in Zukunft wollen wir nur islafuzzer benutzen
+from fuzzingbook.GrammarFuzzer import GrammarFuzzer
 from isla.fuzzer import GrammarFuzzer as ISLaGrammarFuzzer
 
-from evogfuzz.evogfuzz_class import EvoGFuzz
-from evogfuzz.input import Input
-
-from debugging_framework.oracle import OracleResult
 from debugging_framework.report import MultipleFailureReport, Report
-#from evogfuzz.oracle import OracleResult
 from debugging_framework.execution_handler import SingleExecutionHandler
 
-#from evogfuzz.report import MultipleFailureReport, Report
-
-
+from evogfuzz.evogfuzz_class import EvoGFuzz
 
 class Tool(ABC):
     def __init__(self, grammar, oracle, initial_inputs):

@@ -2,7 +2,7 @@ import unittest
 from typing import Set, Tuple, Union
 
 from isla.derivation_tree import DerivationTree
-from fuzzingbook.Parser import EarleyParser
+from isla.parser import EarleyParser
 
 from debugging_framework.execution_handler import (
     SingleExecutionHandler,
@@ -10,9 +10,8 @@ from debugging_framework.execution_handler import (
 )
 from debugging_framework.oracle import OracleResult
 from debugging_framework.report import MultipleFailureReport
+from debugging_framework.input import Input
 
-
-from evogfuzz.input import Input
 from evogfuzz_formalizations.calculator import grammar_alhazen as grammar
 
 

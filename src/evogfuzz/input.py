@@ -1,7 +1,7 @@
 from typing import Generator, Optional, Dict
 
 from isla.derivation_tree import DerivationTree
-from fuzzingbook.Parser import EarleyParser
+from isla.parser import EarleyParser
 
 from debugging_framework.oracle import OracleResult
 from debugging_framework.input import Input as TestInput

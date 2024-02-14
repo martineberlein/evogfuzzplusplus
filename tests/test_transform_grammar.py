@@ -1,11 +1,36 @@
 import unittest
 
-from fuzzingbook.Grammars import EXPR_GRAMMAR
-from fuzzingbook.Parser import EarleyParser
+from debugging_framework.types import Grammar
+from debugging_framework.input import Input
+
+from isla.parser import EarleyParser
 from isla.derivation_tree import DerivationTree
-from evogfuzz.input import Input
+
 from evogfuzz.grammar_transformation import get_transformed_grammar
 
+EXPR_GRAMMAR: Grammar = {
+    "<start>":
+        ["<expr>"],
+
+    "<expr>":
+        ["<term> + <expr>", "<term> - <expr>", "<term>"],
+
+    "<term>":
+        ["<factor> * <term>", "<factor> / <term>", "<factor>"],
+
+    "<factor>":
+        ["+<factor>",
+         "-<factor>",
+         "(<expr>)",
+         "<integer>.<integer>",
+         "<integer>"],
+
+    "<integer>":
+        ["<digit><integer>", "<digit>"],
+
+    "<digit>":
+        ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+}
 
 class TestGrammarTransformation(unittest.TestCase):
     def test_grammar_transformation(self):

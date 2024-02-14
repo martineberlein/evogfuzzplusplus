@@ -1,12 +1,13 @@
 import math
 import string
 
-from fuzzingbook.Grammars import Grammar, srange
+from debugging_framework.types import Grammar
+from debugging_framework.oracle import OracleResult
+from debugging_framework.tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, ISLaGrammarEvaluationFuzzer
+#kam ursprünglich aus tools.py in diesem folder EvoGFuzzEvaluationTool ist noch nicht im debugging_framework -> wird aber gerade implementiert
+
 
 from evogfuzz.input import Input
-#from evogfuzz.oracle import OracleResult
-from debugging_framework.oracle import OracleResult
-from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
 
 EXPR_GRAMMAR: Grammar = {
     "<start>": ["<expr>"],
@@ -25,7 +26,7 @@ EXPR_GRAMMAR: Grammar = {
         "<integer>",
     ],
     "<function_name>": ["<char>", "<char><function_name>"],
-    "<char>": [] + srange(string.ascii_lowercase),
+    "<char>": [c for c in string.ascii_lowercase],
     "<integer>": ["<digit><integer>", "<digit>"],
     "<digit>": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
 }

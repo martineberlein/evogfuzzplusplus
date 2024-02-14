@@ -1,11 +1,9 @@
 import math
 import logging
 
-from fuzzingbook.Grammars import Grammar
-
+from debugging_framework.types import Grammar
 from debugging_framework.oracle import OracleResult
-#from evogfuzz.oracle import OracleResult
-from evogfuzz.input import Input
+from debugging_framework.input import Input
 
 
 def arith_eval(inp: Input) -> float:

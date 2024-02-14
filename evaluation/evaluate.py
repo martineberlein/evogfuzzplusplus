@@ -1,13 +1,7 @@
-import math
-import string
-
-from fuzzingbook.Grammars import Grammar, srange
-
-from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
-from tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, EvoGFuzzEvaluationTool,ISLaGrammarEvaluationFuzzer
+from debugging_framework.tools import GrammarBasedEvaluationFuzzer, InputsFromHellEvaluationFuzzer, ISLaGrammarEvaluationFuzzer
+#EvoGFuzzEvaluationTool muss noch ins framework implementiert werden
 from evaluate_calculator import EXPR_GRAMMAR as calc_grammar, oracle as calc_oracle, initial_inputs as calc_initial_inputs
-# from evogfuzz.logger import VLOGGER
+
 
 
 if __name__ == "__main__":

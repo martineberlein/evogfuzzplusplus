@@ -5,20 +5,20 @@ from random import choice
 import numpy as np
 from copy import deepcopy
 
-from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
-from fuzzingbook.ProbabilisticGrammarFuzzer import (
-    is_valid_probabilistic_grammar,
-    ProbabilisticGrammarFuzzer,
-)
+from isla.parser import EarleyParser
 from isla.derivation_tree import DerivationTree
+
+from debugging_framework.grammar import is_valid_probabilistic_grammar
+from debugging_framework.types import Grammar
 from debugging_framework.oracle import OracleResult
+from debugging_framework.fuzzer import ProbabilisticGrammarFuzzer
+from debugging_framework.report import MultipleFailureReport, SingleFailureReport
+from debugging_framework.execution_handler import SingleExecutionHandler, BatchExecutionHandler
+
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
 
-#from evogfuzz.oracle import OracleResult
-#from debugging_framework.input import Input
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import (
@@ -26,9 +26,6 @@ from evogfuzz.grammar_transformation import (
     get_transformed_grammar_from_strings,
 )
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from debugging_framework.report import MultipleFailureReport, SingleFailureReport
-#from evogfuzz.report import MultipleFailureReport, SingleFailureReport
-from debugging_framework.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 
 
 class EvoGFrame:
