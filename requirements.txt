@@ -1,5 +1,4 @@
 numpy~=1.24.0
-fuzzingbook==1.1
 setuptools~=65.5.1
 matplotlib~=3.6.2
 isla-solver~=1.10.0
