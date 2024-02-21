@@ -11,7 +11,7 @@ from isla.derivation_tree import DerivationTree
 from debugging_framework.grammar import is_valid_probabilistic_grammar
 from debugging_framework.types import Grammar
 from debugging_framework.oracle import OracleResult
-from debugging_framework.fuzzer import ProbabilisticGrammarFuzzer
+from debugging_framework.probalistic_grammar_fuzzer import ProbabilisticGrammarFuzzer
 from debugging_framework.report import MultipleFailureReport, SingleFailureReport
 from debugging_framework.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 

@@ -1,17 +1,12 @@
 from abc import ABC, abstractmethod
 
-from fuzzingbook.ProbabilisticGrammarFuzzer import (
-    ProbabilisticGrammarMiner,
-    ProbabilisticGrammarFuzzer,
-)
 from isla.parser import EarleyParser
-
-#hier werden beide importiert in Zukunft wollen wir nur islafuzzer benutzen
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
-from isla.fuzzer import GrammarFuzzer as ISLaGrammarFuzzer
 
 from debugging_framework.report import MultipleFailureReport, Report
 from debugging_framework.execution_handler import SingleExecutionHandler
+from debugging_framework.grammar_fuzzer import GrammarFuzzer
+from debugging_framework.probalistic_grammar_fuzzer import ProbabilisticGrammarFuzzer
+from debugging_framework.probalistic_grammar_miner import ProbabilisticGrammarMiner
 
 from evogfuzz.evogfuzz_class import EvoGFuzz
 
@@ -60,6 +55,7 @@ class InputsFromHellEvaluationFuzzer(GrammarBasedEvaluationTool):
         prob_grammar = ProbabilisticGrammarMiner(
             EarleyParser(self.grammar)
         ).mine_probabilistic_grammar(inputs=self.initial_inputs)
+
         fuzzer = ProbabilisticGrammarFuzzer(
             prob_grammar, max_nonterminals=self.max_nonterminals
         )
@@ -75,7 +71,7 @@ class InputsFromHellEvaluationFuzzer(GrammarBasedEvaluationTool):
 class ISLaGrammarEvaluationFuzzer(GrammarBasedEvaluationTool):
 
     def run(self) -> Report:
-        fuzzer = ISLaGrammarFuzzer(self.grammar, max_nonterminals=self.max_nonterminals)
+        fuzzer = GrammarFuzzer(self.grammar, max_nonterminals=self.max_nonterminals)
 
         test_inputs = set()
         for _ in range(self.max_generated_inputs):
