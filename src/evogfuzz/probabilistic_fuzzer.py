@@ -8,9 +8,6 @@ from debugging_framework.probalistic_grammar_miner import ProbabilisticGrammarMi
 from isla.parser import Parser
 from isla.derivation_tree import DerivationTree
 
-
-
-
 class ProbabilisticGrammarMinerExtended(ProbabilisticGrammarMiner):
     def __init__(self, parser: Parser, log: bool = False) -> None:
         super().__init__(parser, log)

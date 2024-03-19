@@ -42,6 +42,7 @@ class EvoGFrame:
         use_batch_execution: bool = False,
         transform_grammar: bool = False,
         working_dir: Path = None,
+        logging: bool = False
     ):
         self.grammar = grammar
         self._oracle: Callable[[Input], Union[OracleResult, Sequence]] = oracle
@@ -60,6 +61,7 @@ class EvoGFrame:
             [Input],
             float,
         ] = fitness_function
+        self.logging = logging
 
         # Fuzzing
         self.found_exceptions = set()  # TODO Remove
@@ -139,19 +141,22 @@ class EvoGFrame:
         if -1 == self._max_iterations:
             return True
         if self._iteration >= self._max_iterations:
-            logging.info("Terminate due to maximal iterations reached")
+            if self.logging:
+                logging.info("Terminate due to maximal iterations reached")
             return False
         return True
 
     def _generate_input_files(self, probabilistic_grammar):
-        logging.info("Generating new Test Inputs")
+        if self.logging:
+            logging.info("Generating new Test Inputs")
         probabilistic_fuzzer = ProbabilisticGrammarFuzzer(probabilistic_grammar)
         new_test_inputs = set()
         for _ in range(self._number_individuals):
             new_test_inputs.add(
                 Input(DerivationTree.from_parse_tree(probabilistic_fuzzer.fuzz_tree()))
             )
-        logging.info(f"Generated {len(new_test_inputs)} new Test Inputs")
+        if self.logging:    
+            logging.info(f"Generated {len(new_test_inputs)} new Test Inputs")
         return new_test_inputs
 
     def _safe_fitness_for_grammar(self, sum_fitness: float):
@@ -167,7 +172,8 @@ class EvoGFrame:
         ).select_fittest_individuals()
 
         sum_fitness = sum([inp.fitness for inp in fittest_individuals])
-        logging.debug(
+        if self.logging:    
+            logging.debug(
             f"Current probabilistic grammar achieved a combined fitness of: {sum_fitness}"
         )
         self._safe_fitness_for_grammar(sum_fitness)
@@ -175,7 +181,8 @@ class EvoGFrame:
         return fittest_individuals
 
     def _learn_probabilistic_grammar(self, test_inputs: Set[Input], reset=True):
-        logging.info("Learning new Grammar")
+        if self.logging:
+            logging.info("Learning new Grammar")
 
         # learning_trees = list(inp.tree for inp in test_inputs)
         # print("\n new learning")
@@ -220,13 +227,15 @@ class EvoGFrame:
         return mutated_grammar
 
     def _finalize(self, **kwargs):
-        logging.info("Exiting EvoGFuzz!")
-        logging.info("Final Grammar:")
+        if self.logging:
+            logging.info("Exiting EvoGFuzz!")
+            logging.info("Final Grammar:")
 
         final_grammar = self._get_latest_grammar()
 
         for rule in final_grammar:
-            logging.info(rule.ljust(30) + str(final_grammar[rule]))
+            if self.logging:
+                logging.info(rule.ljust(30) + str(final_grammar[rule]))
 
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
@@ -259,11 +268,13 @@ class EvoGFuzz(EvoGFrame):
     """
 
     def fuzz(self) -> Set[Input]:
-        logging.info("Fuzzing with EvoGFuzz")
+        if self.logging:
+            logging.info("Fuzzing with EvoGFuzz")
         new_population: Set[Input] = self._setup()
 
         while self._do_more_iterations():
-            logging.info(f"Starting iteration {self._iteration}")
+            if self.logging:
+                logging.info(f"Starting iteration {self._iteration}")
             new_population = self._loop(new_population)
             self._iteration = self._iteration + 1
 
@@ -294,6 +305,7 @@ class EvoGGen(EvoGFrame):
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
         transform_grammar: bool = False,
+        logging: bool = False,
     ):
         super().__init__(
             grammar=grammar,
@@ -301,6 +313,7 @@ class EvoGGen(EvoGFrame):
             inputs=inputs,
             fitness_function=fitness_function,
             iterations=iterations,
+            logging=logging
         )
         self.transform_grammar = transform_grammar
         self.failure_inducing_inputs: Set[Input] = set()
@@ -314,7 +327,7 @@ class EvoGGen(EvoGFrame):
         )
 
         assert True in set(
-            True if inp.oracle == OracleResult.FAILING else False for inp in self.inputs
+            True if inp.oracle[0] == OracleResult.FAILING else False for inp in self.inputs
         ), "EvoGGen needs at least one bug-triggering input."
 
         if self.transform_grammar:
@@ -329,14 +342,16 @@ class EvoGGen(EvoGFrame):
             )
 
     def optimize(self) -> (Grammar, Set[Input]):
-        logging.info("Optimizing with EvoGGen")
+        if self.logging:
+            logging.info("Optimizing with EvoGGen")
         self.scenario = Scenario.GENERATOR
 
         self._setup()
 
         new_test_inputs = self.failure_inducing_inputs
         while self._do_more_iterations():
-            logging.info(f"Starting Iteration {self._iteration}")
+            if self.logging:
+                logging.info(f"Starting Iteration {self._iteration}")
             generated_inputs = self._optimize_loop(new_test_inputs)
             new_test_inputs = {
                 inp for inp in generated_inputs if inp.oracle == OracleResult.FAILING
@@ -381,7 +396,7 @@ class EvoGGen(EvoGFrame):
 
         return new_inputs
 
-    def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+    def finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
         return (
             self._learn_probabilistic_grammar(failing_test_inputs, reset=True),
             failing_test_inputs,
