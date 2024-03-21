@@ -11,6 +11,10 @@ from debugging_framework.oracle import OracleResult
 
 from isla.parser import EarleyParser
 
+from debugging_framework.input import Input
+from debugging_framework.oracle import OracleResult
+
+
 from evogfuzz.evogfuzz_class import EvoGGen
 
 
