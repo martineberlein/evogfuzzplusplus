@@ -1,7 +1,7 @@
 import logging
 from typing import Set, List
 
-from debugging_framework.input import Input
+from evogfuzz.input import Input
 
 
 class Tournament:

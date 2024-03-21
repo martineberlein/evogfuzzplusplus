@@ -1,6 +1,10 @@
 import unittest
 
-from debugging_benchmark.calculator.calculator import grammar, initial_inputs, oracle
+from debugging_benchmark.calculator.calculator import (
+    calculator_grammar as grammar,
+    calculator_oracle as oracle,
+    calculator_initial_inputs as initial_inputs,
+)
 
 from evogfuzz import EvoGFuzz
 from evogfuzz.visualization import parse_prob_grammars, plot

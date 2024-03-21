@@ -8,12 +8,11 @@ from debugging_framework.execution_handler import (
     SingleExecutionHandler,
     BatchExecutionHandler,
 )
-
-from evogfuzz_formalizations.calculator import grammar_alhazen as grammar
-from debugging_framework.input import Input
 from debugging_framework.oracle import OracleResult
 from debugging_framework.report import MultipleFailureReport
-from debugging_benchmark.calculator.calculator import grammar
+from debugging_benchmark.calculator.calculator import calculator_grammar as grammar
+
+from evogfuzz.input import Input
 
 
 def program(test_input: str):

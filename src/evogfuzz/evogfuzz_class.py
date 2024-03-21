@@ -13,12 +13,15 @@ from debugging_framework.types import Grammar
 from debugging_framework.oracle import OracleResult
 from debugging_framework.probalistic_grammar_fuzzer import ProbabilisticGrammarFuzzer
 from debugging_framework.report import MultipleFailureReport, SingleFailureReport
-from debugging_framework.execution_handler import SingleExecutionHandler, BatchExecutionHandler
+from debugging_framework.execution_handler import (
+    SingleExecutionHandler,
+    BatchExecutionHandler,
+)
+from debugging_framework.timeout_manager import ManageTimeout
 
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
 from evogfuzz.grammar_transformation import (
@@ -26,9 +29,6 @@ from evogfuzz.grammar_transformation import (
     get_transformed_grammar_from_strings,
 )
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.report import MultipleFailureReport, SingleFailureReport
-from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
-from evogfuzz.timeout_manager import ManageTimeout
 
 
 class EvoGFrame:
@@ -45,7 +45,7 @@ class EvoGFrame:
         use_batch_execution: bool = False,
         transform_grammar: bool = False,
         working_dir: Path = None,
-        logging: bool = False
+        logging: bool = False,
     ):
         self.grammar = grammar
         self._oracle: Callable[[Input], Union[OracleResult, Sequence]] = oracle
@@ -116,7 +116,9 @@ class EvoGFrame:
         logging.info("Executing new Inputs.")
         self.execution_handler.label(test_inputs, self.report)
 
-        test_inputs = set([inp for inp in test_inputs if inp.oracle != OracleResult.UNDEFINED])
+        test_inputs = set(
+            [inp for inp in test_inputs if inp.oracle != OracleResult.UNDEFINED]
+        )
 
         logging.info("Determining Fitness.")
         # determine fitness of individuals
@@ -189,8 +191,8 @@ class EvoGFrame:
         sum_fitness = sum([inp.fitness for inp in fittest_individuals])
         if self.logging:
             logging.debug(
-            f"Current probabilistic grammar achieved a combined fitness of: {sum_fitness}"
-        )
+                f"Current probabilistic grammar achieved a combined fitness of: {sum_fitness}"
+            )
         self._safe_fitness_for_grammar(sum_fitness)
 
         return fittest_individuals
@@ -328,7 +330,7 @@ class EvoGGen(EvoGFrame):
             inputs=inputs,
             fitness_function=fitness_function,
             iterations=iterations,
-            logging=logging
+            logging=logging,
         )
         self.transform_grammar = transform_grammar
         self.failure_inducing_inputs: Set[Input] = set()
@@ -342,7 +344,7 @@ class EvoGGen(EvoGFrame):
         )
 
         assert True in set(
-            True if inp.oracle[0] == OracleResult.FAILING else False for inp in self.inputs
+            True if inp.oracle == OracleResult.FAILING else False for inp in self.inputs
         ), "EvoGGen needs at least one bug-triggering input."
 
         if self.transform_grammar:
@@ -411,7 +413,7 @@ class EvoGGen(EvoGFrame):
 
         return new_inputs
 
-    def finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+    def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
         return (
             self._learn_probabilistic_grammar(failing_test_inputs, reset=True),
             failing_test_inputs,

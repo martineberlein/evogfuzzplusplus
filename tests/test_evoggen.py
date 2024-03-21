@@ -6,16 +6,11 @@ from typing import Optional, Tuple
 from debugging_framework.grammar import is_valid_grammar
 from debugging_framework.types import Grammar
 from debugging_framework.helper import tree_to_string
-from debugging_framework.input import Input
 from debugging_framework.oracle import OracleResult
-
 from isla.parser import EarleyParser
 
-from debugging_framework.input import Input
-from debugging_framework.oracle import OracleResult
-
-
 from evogfuzz.evogfuzz_class import EvoGGen
+from evogfuzz.input import Input
 
 
 def oracle(inp: Input | str) -> Tuple[OracleResult, Optional[Exception]]:
@@ -31,8 +26,8 @@ def oracle(inp: Input | str) -> Tuple[OracleResult, Optional[Exception]]:
             if program(inp)
             else (OracleResult.PASSING, None)
         )
-    except SyntaxError:
-        return OracleResult.UNDEFINED, SyntaxError()
+    except Exception as e:
+        return (OracleResult.UNDEFINED, e)
 
 
 grammar: Grammar = {

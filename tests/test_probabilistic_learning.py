@@ -6,13 +6,14 @@ from isla.derivation_tree import DerivationTree
 from debugging_framework.grammar import is_valid_grammar
 from debugging_framework.helper import tree_to_string
 from debugging_framework.types import Grammar
-from debugging_framework.input import Input
+from debugging_benchmark.calculator.calculator import (
+    calculator_grammar as grammar,
+    calculator_initial_inputs as initial_inputs,
+)
+
 
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz_formalizations.calculator import (
-    grammar_alhazen as grammar_3,
-    initial_inputs as initial_inputs_3,
-)
+from evogfuzz.input import Input
 
 
 class TestProbabilisticLearner(unittest.TestCase):

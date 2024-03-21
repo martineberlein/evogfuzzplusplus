@@ -2,11 +2,12 @@ from typing import List, Union, Set
 
 from debugging_framework.types import Grammar
 from debugging_framework.grammar import expansion_key
-from debugging_framework.input import Input
 from debugging_framework.probalistic_grammar_miner import ProbabilisticGrammarMiner
-
 from isla.parser import Parser
 from isla.derivation_tree import DerivationTree
+
+from evogfuzz.input import Input
+
 
 class ProbabilisticGrammarMinerExtended(ProbabilisticGrammarMiner):
     def __init__(self, parser: Parser, log: bool = False) -> None:
@@ -41,5 +42,3 @@ class ProbabilisticGrammarMinerExtended(ProbabilisticGrammarMiner):
         self.count_expansions(inputs)
         self.set_probabilities(self.counts())
         return self.grammar
-    
-    

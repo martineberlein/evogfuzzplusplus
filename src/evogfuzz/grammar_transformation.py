@@ -4,10 +4,9 @@ from typing import Set, List
 from debugging_framework.types import Grammar
 from debugging_framework.grammar import is_nonterminal, is_valid_grammar
 from debugging_framework.helper import tree_to_string
-
 from isla.parser import EarleyParser
 
-from debugging_framework.input import Input
+from evogfuzz.input import Input
 
 
 def extend_grammar(derivation_tree, grammar, original_grammar, recursive: bool = True):
