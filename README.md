@@ -139,6 +139,7 @@ If you want to explore more of how EvoGFuzz works, make sure to have a look at t
 
 - **[evogfuzz_demo.ipynb](./notebooks/evoggen_demo.ipynb):** A quick and more detailed tutorial on how to setup up EvoGFuzz. It also showcases how to change the fitness functions.
 - **[evoggen_demo.ipynb](./notebooks/evoggen_demo.ipynb):** This notebook demonstrates the capabilities of EvoGGen, a version of EvoGFuzz, that optimizes the probablistic grammar to reproduce individual failures.
+- **[readme.ipynb](./notebooks/readme.ipynb):** The executable example from this README.md.
 
 
 ## Install, Development, Testing, Build
@@ -147,14 +148,6 @@ If you want to explore more of how EvoGFuzz works, make sure to have a look at t
 If all external dependencies are available, a simple pip install evogfuzz suffices.
 We recommend installing EvoGFuzz inside a virtual environment (virtualenv), commands differ slightly for MacOS/Linux and Windows users:
 
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
-
 ```
 python3.10 -m venv venv
 source venv/bin/activate
@@ -162,22 +155,6 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install evogfuzz
 ```
-</td>
-<td>
-
-```
-#create a venv with the specified version
-py -3.10 -m venv venv3_10
-
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-pip install evogfuzz
-```
-</td>
-</tr>
-</table>
 
 Now, the evogfuzz command should be available on the command line within the virtual environment.
 
@@ -186,14 +163,6 @@ Now, the evogfuzz command should be available on the command line within the vir
 For development, we recommend using EvoGFuzz inside a virtual environment (virtualenv).
 By thing the following steps in a standard shell (bash), one can run the EvoGFuzz tests:
 
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
-
 ```
 git clone https://github.com/martineberlein/evogfuzzplusplus.git
 cd evogfuzzplusplus/
@@ -205,71 +174,9 @@ pip install --upgrade pip
 
 # Run tests
 pip install -e .[dev]
+pip install -r requirements.txt
+
 python3 -m pytest
 ```
-</td>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzzplusplus/
-
-py -3.10 -m venv venv3_10
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-
-# Run tests
-pip install -e .[dev]
-python -m pytest
-```
-</td>
-</tr>
-</table>
-
-
-### Build
-
-EvoGFuzz is build locally as follows:
-
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzz/
-
-python3.10 -m venv venv
-source venv/bin/activate
-
-pip install --upgrade pip
-pip install --upgrade build
-python3 -m build
-```
-</td>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzz/
-
-py -3.10 -m venv venv3_10
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-pip install --upgrade build
-python -m build
-```
-</td>
-</tr>
-</table>
-
 
 Then, you will find the built wheel (*.whl) in the dist/ directory.
