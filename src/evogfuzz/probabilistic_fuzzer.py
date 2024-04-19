@@ -1,43 +1,17 @@
-from typing import List, Union, Set, Tuple, Optional, Any
+from typing import List, Union, Set
 
-from fuzzingbook.Grammars import Grammar, Expansion
-from fuzzingbook.GrammarFuzzer import all_terminals
-from fuzzingbook.Parser import Parser, EarleyParser
-from fuzzingbook.ProbabilisticGrammarFuzzer import ProbabilisticGrammarMiner
+from debugging_framework.types import Grammar
+from debugging_framework.fuzzingbook.grammar import expansion_key
+from debugging_framework.fuzzingbook.probalistic_grammar_miner import ProbabilisticGrammarMiner
+from isla.parser import Parser
 from isla.derivation_tree import DerivationTree
 
 from evogfuzz.input import Input
 
 
-def expansion_key(
-    symbol: str,
-    expansion: Union[Expansion, Tuple[str, Optional[List[Any]]], List[DerivationTree]],
-) -> str:
-    """Convert (symbol, `expansion`) into a key "SYMBOL -> EXPRESSION".
-    `expansion` can be an expansion string, a derivation tree,
-       or a list of derivation trees."""
-
-    if isinstance(expansion, tuple):
-        # Expansion or single derivation tree
-        expansion, _ = expansion
-
-    # Check for empty list expansion
-    if isinstance(expansion, list) and not expansion:
-        expansion = ""
-
-    if not isinstance(expansion, str):
-        # Derivation tree
-        children = expansion
-        expansion = all_terminals((symbol, children))
-
-    assert isinstance(expansion, str)
-
-    return symbol + " -> " + expansion
-
-
 class ProbabilisticGrammarMinerExtended(ProbabilisticGrammarMiner):
-    def __int__(self, parser: Parser, log: bool = False) -> None:
-        super().__int__(parser, log)
+    def __init__(self, parser: Parser, log: bool = False) -> None:
+        super().__init__(parser, log)
 
     def add_coverage(self, symbol: str, children: List[DerivationTree]) -> None:
         key = expansion_key(symbol, children)

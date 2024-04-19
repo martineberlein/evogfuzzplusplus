@@ -1,27 +1,33 @@
 import logging
-from typing import Callable, List, Union, Set, Tuple, Optional, Sequence
+from typing import Callable, List, Union, Set, Tuple, Sequence, Optional
 from pathlib import Path
 from random import choice
 import numpy as np
 from copy import deepcopy
 
-from fuzzingbook.Grammars import Grammar
-from fuzzingbook.Parser import EarleyParser
-from fuzzingbook.ProbabilisticGrammarFuzzer import (
-    is_valid_probabilistic_grammar,
-    ProbabilisticGrammarFuzzer,
-)
+from isla.parser import EarleyParser
 from isla.derivation_tree import DerivationTree
+
+from debugging_framework.fuzzingbook.grammar import is_valid_probabilistic_grammar
+from debugging_framework.types import Grammar, OracleType
+from debugging_framework.input.oracle import OracleResult
+from debugging_framework.fuzzingbook.probalistic_fuzzer import ProbabilisticGrammarFuzzer
+from debugging_framework.execution.report import MultipleFailureReport, SingleFailureReport
+from debugging_framework.execution.execution_handler import (
+    SingleExecutionHandler,
+    BatchExecutionHandler,
+)
+from debugging_framework.execution.timeout_manager import ManageTimeout
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
-from evogfuzz.oracle import OracleResult
 from evogfuzz.input import Input
 from evogfuzz.types import GrammarType, Scenario
-from evogfuzz.grammar_transformation import get_transformed_grammar
+from evogfuzz.grammar_transformation import (
+    get_transformed_grammar,
+    get_transformed_grammar_from_strings,
+)
 from evogfuzz.probabilistic_fuzzer import ProbabilisticGrammarMinerExtended
-from evogfuzz.report import MultipleFailureReport, SingleFailureReport
-from evogfuzz.execution_handler import SingleExecutionHandler, BatchExecutionHandler
 
 
 class EvoGFrame:
@@ -30,16 +36,18 @@ class EvoGFrame:
     def __init__(
         self,
         grammar: Grammar,
-        oracle: Callable[[Union[Input, str]], Union[OracleResult, Sequence]],
+        oracle: OracleType,
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
         use_multi_failure_report: bool = True,
         use_batch_execution: bool = False,
+        transform_grammar: bool = False,
         working_dir: Path = None,
+        logging: bool = False,
     ):
         self.grammar = grammar
-        self._oracle: Callable[[Input], Union[OracleResult, Sequence]] = oracle
+        self._oracle = oracle
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Tuple[Grammar, GrammarType, float]] = []
         self._iteration: int = 0
@@ -51,13 +59,11 @@ class EvoGFrame:
         self._tournament_number: int = 25
         self._all_inputs = set()
         self._avg_prev_data = 0
-        self.fitness_function: Union[
-            Callable[
-                [Input],
-                float,
-            ],
-            None,
+        self.fitness_function: Callable[
+            [Input],
+            float,
         ] = fitness_function
+        self.logging = logging
 
         # Fuzzing
         self.found_exceptions = set()  # TODO Remove
@@ -73,6 +79,11 @@ class EvoGFrame:
             if use_batch_execution
             else SingleExecutionHandler(self._oracle)
         )
+
+        if transform_grammar:
+            self.grammar = get_transformed_grammar_from_strings(
+                inputs, self.grammar, recursive=False
+            )
 
         self._probabilistic_grammar_miner = ProbabilisticGrammarMinerExtended(
             EarleyParser(self.grammar)
@@ -101,8 +112,14 @@ class EvoGFrame:
 
     def _loop(self, test_inputs: Set[Input]):
         # obtain labels, execute samples (Initial Step, Activity 5)
+        logging.info("Executing new Inputs.")
         self.execution_handler.label(test_inputs, self.report)
 
+        test_inputs = set(
+            [inp for inp in test_inputs if inp.oracle != OracleResult.UNDEFINED]
+        )
+
+        logging.info("Determining Fitness.")
         # determine fitness of individuals
         for inp in test_inputs:
             inp.fitness = self.fitness_function(inp)
@@ -110,39 +127,52 @@ class EvoGFrame:
         for inp in test_inputs:
             self._all_inputs.add(inp)
 
+        logging.info("Selecting best Inputs.")
         # select fittest individuals
         fittest_individuals: Set[Input] = self._select_fittest_individuals(test_inputs)
 
+        logging.info("Learning new probabilistic Grammar.")
         # learn new probabilistic grammar
         probabilistic_grammar = self._learn_probabilistic_grammar(fittest_individuals)
         self._probabilistic_grammars.append(
             (deepcopy(probabilistic_grammar), GrammarType.LEARNED, -1)
         )
 
+        logging.info("Mutating Grammar.")
         # mutate grammar
         mutated_grammar = self._mutate_grammar(probabilistic_grammar)
         self._probabilistic_grammars.append((mutated_grammar, GrammarType.MUTATED, -1))
 
-        # generate new population
-        return self._generate_input_files(mutated_grammar)
+        try:
+            with ManageTimeout(2):
+                # generate new population
+                new_inputs = self._generate_input_files(mutated_grammar)
+        except TimeoutError:
+            logging.info("Timeout while generating new Inputs!")
+            new_inputs = self.inputs
+
+        return new_inputs
 
     def _do_more_iterations(self):
         if -1 == self._max_iterations:
             return True
         if self._iteration >= self._max_iterations:
-            logging.info("Terminate due to maximal iterations reached")
+            if self.logging:
+                logging.info("Terminate due to maximal iterations reached")
             return False
         return True
 
     def _generate_input_files(self, probabilistic_grammar):
-        logging.info("Generating new Test Inputs")
+        if self.logging:
+            logging.info("Generating new Test Inputs")
         probabilistic_fuzzer = ProbabilisticGrammarFuzzer(probabilistic_grammar)
         new_test_inputs = set()
         for _ in range(self._number_individuals):
             new_test_inputs.add(
                 Input(DerivationTree.from_parse_tree(probabilistic_fuzzer.fuzz_tree()))
             )
-        logging.info(f"Generated {len(new_test_inputs)} new Test Inputs")
+        if self.logging:
+            logging.info(f"Generated {len(new_test_inputs)} new Test Inputs")
         return new_test_inputs
 
     def _safe_fitness_for_grammar(self, sum_fitness: float):
@@ -158,15 +188,17 @@ class EvoGFrame:
         ).select_fittest_individuals()
 
         sum_fitness = sum([inp.fitness for inp in fittest_individuals])
-        logging.debug(
-            f"Current probabilistic grammar achieved a combined fitness of: {sum_fitness}"
-        )
+        if self.logging:
+            logging.debug(
+                f"Current probabilistic grammar achieved a combined fitness of: {sum_fitness}"
+            )
         self._safe_fitness_for_grammar(sum_fitness)
 
         return fittest_individuals
 
     def _learn_probabilistic_grammar(self, test_inputs: Set[Input], reset=True):
-        logging.info("Learning new Grammar")
+        if self.logging:
+            logging.info("Learning new Grammar")
 
         # learning_trees = list(inp.tree for inp in test_inputs)
         # print("\n new learning")
@@ -211,13 +243,15 @@ class EvoGFrame:
         return mutated_grammar
 
     def _finalize(self, **kwargs):
-        logging.info("Exiting EvoGFuzz!")
-        logging.info("Final Grammar:")
+        if self.logging:
+            logging.info("Exiting EvoGFuzz!")
+            logging.info("Final Grammar:")
 
         final_grammar = self._get_latest_grammar()
 
         for rule in final_grammar:
-            logging.info(rule.ljust(30) + str(final_grammar[rule]))
+            if self.logging:
+                logging.info(rule.ljust(30) + str(final_grammar[rule]))
 
     def _get_latest_grammar(self):
         return self._probabilistic_grammars[-1][0]
@@ -250,11 +284,13 @@ class EvoGFuzz(EvoGFrame):
     """
 
     def fuzz(self) -> Set[Input]:
-        logging.info("Fuzzing with EvoGFuzz")
+        if self.logging:
+            logging.info("Fuzzing with EvoGFuzz")
         new_population: Set[Input] = self._setup()
 
         while self._do_more_iterations():
-            logging.info(f"Starting iteration {self._iteration}")
+            if self.logging:
+                logging.info(f"Starting iteration {self._iteration}")
             new_population = self._loop(new_population)
             self._iteration = self._iteration + 1
 
@@ -280,11 +316,12 @@ class EvoGGen(EvoGFrame):
     def __init__(
         self,
         grammar: Grammar,
-        oracle: Callable[[Union[Input, str]], OracleResult],
+        oracle: Callable[[Union[Input, str]], Tuple[OracleResult, Optional[Exception]]],
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
         transform_grammar: bool = False,
+        logging: bool = False,
     ):
         super().__init__(
             grammar=grammar,
@@ -292,20 +329,21 @@ class EvoGGen(EvoGFrame):
             inputs=inputs,
             fitness_function=fitness_function,
             iterations=iterations,
+            logging=logging,
         )
         self.transform_grammar = transform_grammar
         self.failure_inducing_inputs: Set[Input] = set()
 
     def _setup(self):
         for inp in self.inputs:
-            inp.oracle = self._oracle(inp)
+            inp.oracle, _ = self._oracle(inp)
 
         self.failure_inducing_inputs.update(
-            {inp for inp in self.inputs if inp.oracle == OracleResult.BUG}
+            {inp for inp in self.inputs if inp.oracle == OracleResult.FAILING}
         )
 
         assert True in set(
-            True if inp.oracle == OracleResult.BUG else False for inp in self.inputs
+            True if inp.oracle == OracleResult.FAILING else False for inp in self.inputs
         ), "EvoGGen needs at least one bug-triggering input."
 
         if self.transform_grammar:
@@ -319,18 +357,20 @@ class EvoGGen(EvoGFrame):
                 EarleyParser(self.grammar)
             )
 
-    def optimize(self) -> (Grammar, Set[Input]):
-        logging.info("Optimizing with EvoGGen")
+    def optimize(self) -> Tuple[Grammar, Set[Input]]:
+        if self.logging:
+            logging.info("Optimizing with EvoGGen")
         self.scenario = Scenario.GENERATOR
 
         self._setup()
 
         new_test_inputs = self.failure_inducing_inputs
         while self._do_more_iterations():
-            logging.info(f"Starting Iteration {self._iteration}")
+            if self.logging:
+                logging.info(f"Starting Iteration {self._iteration}")
             generated_inputs = self._optimize_loop(new_test_inputs)
             new_test_inputs = {
-                inp for inp in generated_inputs if inp.oracle == OracleResult.BUG
+                inp for inp in generated_inputs if inp.oracle == OracleResult.FAILING
             }
             self.failure_inducing_inputs.update(new_test_inputs)
             self._iteration = self._iteration + 1
@@ -367,12 +407,12 @@ class EvoGGen(EvoGFrame):
         new_inputs.update(self._generate_input_files(mutated_grammar))
 
         for inp in new_inputs:
-            label = self._oracle(inp)
+            label, _ = self._oracle(inp)
             inp.oracle = label
 
         return new_inputs
 
-    def _finalize(self, failing_test_inputs: Set[Input]) -> (Grammar, Set[Input]):
+    def _finalize(self, failing_test_inputs: Set[Input]) -> Tuple[Grammar, Set[Input]]:
         return (
             self._learn_probabilistic_grammar(failing_test_inputs, reset=True),
             failing_test_inputs,

@@ -1,11 +1,12 @@
 import unittest
 
-from evogfuzz import EvoGFuzz
-from evogfuzz_formalizations.calculator import (
-    grammar_alhazen as grammar,
-    initial_inputs,
-    prop,
+from debugging_benchmark.calculator.calculator import (
+    calculator_grammar as grammar,
+    calculator_oracle as oracle,
+    calculator_initial_inputs as initial_inputs,
 )
+
+from evogfuzz import EvoGFuzz
 from evogfuzz.visualization import parse_prob_grammars, plot
 
 ITERATIONS = 3
@@ -14,7 +15,7 @@ ITERATIONS = 3
 class TestEvoGFuzzVisualization(unittest.TestCase):
     def setUp(self) -> None:
         self.evogfuzz = EvoGFuzz(
-            grammar=grammar, oracle=prop, inputs=initial_inputs, iterations=ITERATIONS
+            grammar=grammar, oracle=oracle, inputs=initial_inputs, iterations=ITERATIONS
         )
         self.evogfuzz.fuzz()
         self.all_prob_grammars = self.evogfuzz._probabilistic_grammars
@@ -30,18 +31,18 @@ class TestEvoGFuzzVisualization(unittest.TestCase):
             "<function>->sin",
             "<function>->cos",
             "<function>->tan",
-            "<number>-><maybe_minus><onenine><maybe_digits><maybe_frac>",
+            "<number>-><maybe_minus><one_nine><maybe_digits><maybe_frac>",
             "<maybe_minus>->",
             "<maybe_minus>->-",
-            "<onenine>->1",
-            "<onenine>->2",
-            "<onenine>->3",
-            "<onenine>->4",
-            "<onenine>->5",
-            "<onenine>->6",
-            "<onenine>->7",
-            "<onenine>->8",
-            "<onenine>->9",
+            "<one_nine>->1",
+            "<one_nine>->2",
+            "<one_nine>->3",
+            "<one_nine>->4",
+            "<one_nine>->5",
+            "<one_nine>->6",
+            "<one_nine>->7",
+            "<one_nine>->8",
+            "<one_nine>->9",
             "<digit>->0",
             "<digit>->1",
             "<digit>->2",

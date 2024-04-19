@@ -1,8 +1,8 @@
 from typing import Dict, List, Tuple, Union
 import matplotlib.pyplot as plt
+from debugging_framework.types import Grammar
 
 from evogfuzz.types import GrammarType
-from evogfuzz.type_defs import Grammar
 
 
 def _initialize(grammar: Grammar) -> Dict[str, list]:

@@ -1,16 +1,19 @@
 import unittest
 import string
 from itertools import product
+from typing import Optional, Tuple
 
-from fuzzingbook.Grammars import Grammar, is_valid_grammar
-from fuzzingbook.Parser import EarleyParser, tree_to_string
+from debugging_framework.fuzzingbook.grammar import is_valid_grammar
+from debugging_framework.types import Grammar
+from debugging_framework.fuzzingbook.helper import tree_to_string
+from debugging_framework.input.oracle import OracleResult
+from isla.parser import EarleyParser
 
 from evogfuzz.evogfuzz_class import EvoGGen
 from evogfuzz.input import Input
-from evogfuzz.oracle import OracleResult
 
 
-def oracle(inp: Input | str):
+def oracle(inp: Input | str) -> Tuple[OracleResult, Optional[Exception]]:
     def program(inp_):
         if eval(str(inp_)) <= -8:
             return True
@@ -18,9 +21,13 @@ def oracle(inp: Input | str):
             return False
 
     try:
-        return OracleResult.BUG if program(inp) else OracleResult.NO_BUG
-    except SyntaxError:
-        return OracleResult.UNDEF
+        return (
+            (OracleResult.FAILING, AssertionError())
+            if program(inp)
+            else (OracleResult.PASSING, None)
+        )
+    except Exception as e:
+        return OracleResult.UNDEFINED, e
 
 
 grammar: Grammar = {
@@ -33,18 +40,18 @@ grammar: Grammar = {
 initial_inputs = ["-8", "1"]
 
 
-def oracle_2(inp: Input | str):
+def oracle_2(inp: Input | str) -> Tuple[OracleResult, Optional[Exception]]:
     def program(inp_: str):
         elements = inp_.split(";")
         assert not (-9 <= eval(str(elements[0])) <= -1 and elements[1] == "fuzzer")
 
     try:
         program(str(inp))
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING, None
     except AssertionError:
-        return OracleResult.BUG
+        return OracleResult.FAILING, AssertionError()
     except SyntaxError:
-        return OracleResult.UNDEF
+        return OracleResult.UNDEFINED, SyntaxError()
 
 
 grammar_2: Grammar = {
@@ -71,8 +78,10 @@ class TestEvoGGen(unittest.TestCase):
             for tree in parser.parse(inp):
                 assert inp == tree_to_string(tree=tree)
 
-        assert oracle(initial_inputs[0]) == OracleResult.BUG
-        assert oracle(initial_inputs[1]) == OracleResult.NO_BUG
+        result, _ = oracle(initial_inputs[0])
+        assert result == OracleResult.FAILING
+        result, _ = oracle(initial_inputs[1])
+        assert result == OracleResult.PASSING
 
         # Case #2: oracle_2, grammar_2, and initial_inputs_2
         assert is_valid_grammar(grammar=grammar_2)
@@ -82,8 +91,10 @@ class TestEvoGGen(unittest.TestCase):
             for tree in parser.parse(inp):
                 assert inp == tree_to_string(tree=tree)
 
-        assert oracle_2(initial_inputs_2[0]) == OracleResult.BUG
-        assert oracle_2(initial_inputs_2[1]) == OracleResult.NO_BUG
+        result, _ = oracle_2(initial_inputs_2[0])
+        assert result == OracleResult.FAILING
+        result, _ = oracle_2(initial_inputs_2[1])
+        assert result == OracleResult.PASSING
 
     def test_evoggen(self):
         expected_grammar: Grammar = {

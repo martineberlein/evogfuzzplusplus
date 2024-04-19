@@ -28,16 +28,16 @@ def arith_eval(inp) -> float:
 We use an oracle function to discern between normal and faulty behavior:
 
 ```python 
-from evogfuzz.oracle import OracleResult
+from debugging_framework import OracleResult
 
 def oracle(inp: str) -> OracleResult:
     try:
         arith_eval(inp)
-        return OracleResult.NO_BUG
+        return OracleResult.PASSING
     except ValueError:
-        return OracleResult.BUG
+        return OracleResult.FAILING
     
-    return OracleResult.NO_BUG
+    return OracleResult.PASSING
 ``` 
 
 We can see this in action by testing a few initial inputs:
@@ -50,10 +50,10 @@ print([(x, oracle(x)) for x in initial_inputs])
 This will yield the following output:
 
 ```
-[('cos(10)', OracleResult.NO_BUG),
- ('sqrt(28367)', OracleResult.NO_BUG),
- ('tan(-12)', OracleResult.NO_BUG),
- ('sqrt(3)', OracleResult.NO_BUG)]
+[('cos(10)', OracleResult.PASSING),
+ ('sqrt(28367)', OracleResult.PASSING),
+ ('tan(-12)', OracleResult.PASSING),
+ ('sqrt(3)', OracleResult.PASSING)]
 ```
 
 We apply our `EvoGFuzz` class to carry out fuzz testing using evolutionary grammar-based fuzzing. This is aimed at uncovering potential defects in our 'calculator' function.

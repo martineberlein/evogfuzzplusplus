@@ -1,8 +1,8 @@
 import unittest
 
-from fuzzingbook.GrammarFuzzer import GrammarFuzzer
-from evogfuzz_formalizations.calculator import grammar_alhazen as grammar
+from isla.fuzzer import GrammarFuzzer
 from isla.derivation_tree import DerivationTree
+from debugging_benchmark.calculator.calculator import calculator_grammar as grammar
 
 from evogfuzz.input import Input
 from evogfuzz.tournament_selection import Tournament
