@@ -137,7 +137,7 @@ By applying evolutionary algorithms to our fuzzing strategy, we can guide the se
 
 If you want to explore more of how EvoGFuzz works, make sure to have a look at the jupyter notebooks in the notebooks folder:
 
-- **[evogfuzz_demo.ipynb](./notebooks/evoggen_demo.ipynb):** A quick and more detailed tutorial on how to setup up EvoGFuzz. It also showcases how to change the fitness functions.
+- **[evogfuzz_demo.ipynb](./notebooks/evogfuzz_demo.ipynb):** A quick and more detailed tutorial on how to setup up EvoGFuzz. It also showcases how to change the fitness functions.
 - **[evoggen_demo.ipynb](./notebooks/evoggen_demo.ipynb):** This notebook demonstrates the capabilities of EvoGGen, a version of EvoGFuzz, that optimizes the probablistic grammar to reproduce individual failures.
 - **[readme.ipynb](./notebooks/readme.ipynb):** The executable example from this README.md.
 
