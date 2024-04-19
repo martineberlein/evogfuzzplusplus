@@ -28,7 +28,7 @@ def arith_eval(inp) -> float:
 We use an oracle function to discern between normal and faulty behavior:
 
 ```python 
-from debugging_framework import OracleResult
+from debugging_framework.input.oracle import OracleResult
 
 def oracle(inp: str) -> OracleResult:
     try:
@@ -44,16 +44,18 @@ We can see this in action by testing a few initial inputs:
 
 ```python
 initial_inputs = ['cos(10)', 'sqrt(28367)', 'tan(-12)', 'sqrt(3)']
-print([(x, oracle(x)) for x in initial_inputs])
+
+for inp in initial_inputs:
+    print(inp.ljust(20), oracle(inp))
 ```
 
 This will yield the following output:
 
 ```
-[('cos(10)', OracleResult.PASSING),
- ('sqrt(28367)', OracleResult.PASSING),
- ('tan(-12)', OracleResult.PASSING),
- ('sqrt(3)', OracleResult.PASSING)]
+cos(10)              PASSING
+sqrt(28367)          PASSING
+tan(-12)             PASSING
+sqrt(3)              PASSING
 ```
 
 We apply our `EvoGFuzz` class to carry out fuzz testing using evolutionary grammar-based fuzzing. This is aimed at uncovering potential defects in our 'calculator' function.
@@ -106,44 +108,45 @@ for inp in list(found_exception_inputs)[:20]:
 Output:
 
 ````
-sqrt(-61)                      BUG
-sqrt(-373)                     BUG
-sqrt(-78)                      BUG
-sqrt(-4)                       BUG
-sqrt(-6)                       BUG
-sqrt(-73)                      BUG
-sqrt(-45)                      BUG
-sqrt(-87738)                   BUG
-sqrt(-5587)                    BUG
-sqrt(-823853)                  BUG
-sqrt(-38317)                   BUG
-sqrt(-83)                      BUG
-sqrt(-7)                       BUG
-sqrt(-43)                      BUG
-sqrt(-71337)                   BUG
-sqrt(-3737437)                 BUG
-sqrt(-17)                      BUG
-sqrt(-33)                      BUG
-sqrt(-57662773794)             BUG
-sqrt(-731)                     BUG
+sqrt(-739)                     FAILING
+sqrt(-84358)                   FAILING
+sqrt(-649)                     FAILING
+sqrt(-18)                      FAILING
+sqrt(-23306)                   FAILING
+sqrt(-388)                     FAILING
+sqrt(-354)                     FAILING
+sqrt(-795)                     FAILING
+sqrt(-2452969)                 FAILING
+sqrt(-1989994)                 FAILING
+sqrt(-68)                      FAILING
+sqrt(-2538)                    FAILING
+sqrt(-14)                      FAILING
+sqrt(-134)                     FAILING
+sqrt(-279)                     FAILING
+sqrt(-748)                     FAILING
+sqrt(-6)                       FAILING
+sqrt(-11)                      FAILING
+sqrt(-140)                     FAILING
+sqrt(-32)                      FAILING
 ````
 
 This process illustrates the power of evolutionary grammar-based fuzzing in identifying new defects within our system.
 By applying evolutionary algorithms to our fuzzing strategy, we can guide the search towards more defect-prone regions of the input space.
+
+### More Examples:
+
+If you want to explore more of how EvoGFuzz works, make sure to have a look at the jupyter notebooks in the notebooks folder:
+
+- **[evogfuzz_demo.ipynb](./notebooks/evoggen_demo.ipynb):** A quick and more detailed tutorial on how to setup up EvoGFuzz. It also showcases how to change the fitness functions.
+- **[evoggen_demo.ipynb](./notebooks/evoggen_demo.ipynb):** This notebook demonstrates the capabilities of EvoGGen, a version of EvoGFuzz, that optimizes the probablistic grammar to reproduce individual failures.
+- **[readme.ipynb](./notebooks/readme.ipynb):** The executable example from this README.md.
+
 
 ## Install, Development, Testing, Build
 
 ### Install
 If all external dependencies are available, a simple pip install evogfuzz suffices.
 We recommend installing EvoGFuzz inside a virtual environment (virtualenv), commands differ slightly for MacOS/Linux and Windows users:
-
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
 
 ```
 python3.10 -m venv venv
@@ -152,22 +155,6 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install evogfuzz
 ```
-</td>
-<td>
-
-```
-#create a venv with the specified version
-py -3.10 -m venv venv3_10
-
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-pip install evogfuzz
-```
-</td>
-</tr>
-</table>
 
 Now, the evogfuzz command should be available on the command line within the virtual environment.
 
@@ -176,14 +163,6 @@ Now, the evogfuzz command should be available on the command line within the vir
 For development, we recommend using EvoGFuzz inside a virtual environment (virtualenv).
 By thing the following steps in a standard shell (bash), one can run the EvoGFuzz tests:
 
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
-
 ```
 git clone https://github.com/martineberlein/evogfuzzplusplus.git
 cd evogfuzzplusplus/
@@ -195,71 +174,9 @@ pip install --upgrade pip
 
 # Run tests
 pip install -e .[dev]
+pip install -r requirements.txt
+
 python3 -m pytest
 ```
-</td>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzzplusplus/
-
-py -3.10 -m venv venv3_10
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-
-# Run tests
-pip install -e .[dev]
-python -m pytest
-```
-</td>
-</tr>
-</table>
-
-
-### Build
-
-EvoGFuzz is build locally as follows:
-
-<table>
-<tr>
-<th style="font-weight: normal;">MacOS/Linux</th>
-<th style="font-weight: normal;">Windows</th>
-</tr>
-<tr>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzz/
-
-python3.10 -m venv venv
-source venv/bin/activate
-
-pip install --upgrade pip
-pip install --upgrade build
-python3 -m build
-```
-</td>
-<td>
-
-```
-git clone https://github.com/martineberlein/evogfuzzplusplus.git
-cd evogfuzz/
-
-py -3.10 -m venv venv3_10
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-venv3_10/Scripts/Activate.ps1
-
-python -m pip install --upgrade pip
-pip install --upgrade build
-python -m build
-```
-</td>
-</tr>
-</table>
-
 
 Then, you will find the built wheel (*.whl) in the dist/ directory.
