@@ -8,17 +8,16 @@ from copy import deepcopy
 from isla.parser import EarleyParser
 from isla.derivation_tree import DerivationTree
 
-from debugging_framework.grammar import is_valid_probabilistic_grammar
-from debugging_framework.types import Grammar
-from debugging_framework.oracle import OracleResult
-from debugging_framework.probalistic_grammar_fuzzer import ProbabilisticGrammarFuzzer
-from debugging_framework.report import MultipleFailureReport, SingleFailureReport
-from debugging_framework.execution_handler import (
+from debugging_framework.fuzzingbook.grammar import is_valid_probabilistic_grammar
+from debugging_framework.types import Grammar, OracleType
+from debugging_framework.input.oracle import OracleResult
+from debugging_framework.fuzzingbook.probalistic_fuzzer import ProbabilisticGrammarFuzzer
+from debugging_framework.execution.report import MultipleFailureReport, SingleFailureReport
+from debugging_framework.execution.execution_handler import (
     SingleExecutionHandler,
     BatchExecutionHandler,
 )
-from debugging_framework.timeout_manager import ManageTimeout
-
+from debugging_framework.execution.timeout_manager import ManageTimeout
 
 from evogfuzz.tournament_selection import Tournament
 from evogfuzz.fitness_functions import fitness_function_failure
@@ -37,7 +36,7 @@ class EvoGFrame:
     def __init__(
         self,
         grammar: Grammar,
-        oracle: Callable[[Union[Input, str]], Union[OracleResult, Sequence]],
+        oracle: OracleType,
         inputs: List[str],
         fitness_function: Callable[[Input], float] = fitness_function_failure,
         iterations: int = 10,
@@ -48,7 +47,7 @@ class EvoGFrame:
         logging: bool = False,
     ):
         self.grammar = grammar
-        self._oracle: Callable[[Input], Union[OracleResult, Sequence]] = oracle
+        self._oracle = oracle
         self.working_dir = working_dir
         self._probabilistic_grammars: List[Tuple[Grammar, GrammarType, float]] = []
         self._iteration: int = 0

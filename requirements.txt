@@ -1,7 +1,8 @@
-numpy~=1.24.0
+numpy
 setuptools~=65.5.1
 matplotlib~=3.8.0
 isla-solver~=1.10.0
-debugging_benchmark
 jupyter
-pandas~=1.5.3
+pandas
+
+git+https://github.com/martineberlein/debugging-benchmark.git@dev

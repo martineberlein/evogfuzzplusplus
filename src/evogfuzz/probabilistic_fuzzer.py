@@ -1,8 +1,8 @@
 from typing import List, Union, Set
 
 from debugging_framework.types import Grammar
-from debugging_framework.grammar import expansion_key
-from debugging_framework.probalistic_grammar_miner import ProbabilisticGrammarMiner
+from debugging_framework.fuzzingbook.grammar import expansion_key
+from debugging_framework.fuzzingbook.probalistic_grammar_miner import ProbabilisticGrammarMiner
 from isla.parser import Parser
 from isla.derivation_tree import DerivationTree
 

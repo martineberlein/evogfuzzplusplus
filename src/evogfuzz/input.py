@@ -1,5 +1,5 @@
-from debugging_framework.input import Input as TestInput
-from debugging_framework.oracle import OracleResult
+from debugging_framework.input.input import Input as TestInput
+from debugging_framework.input.oracle import OracleResult
 from isla.language import DerivationTree
 
 

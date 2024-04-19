@@ -1,4 +1,4 @@
-from debugging_framework.oracle import OracleResult
+from debugging_framework.input.oracle import OracleResult
 
 from evogfuzz.input import Input
 

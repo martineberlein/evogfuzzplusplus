@@ -3,10 +3,10 @@ import string
 from itertools import product
 from typing import Optional, Tuple
 
-from debugging_framework.grammar import is_valid_grammar
+from debugging_framework.fuzzingbook.grammar import is_valid_grammar
 from debugging_framework.types import Grammar
-from debugging_framework.helper import tree_to_string
-from debugging_framework.oracle import OracleResult
+from debugging_framework.fuzzingbook.helper import tree_to_string
+from debugging_framework.input.oracle import OracleResult
 from isla.parser import EarleyParser
 
 from evogfuzz.evogfuzz_class import EvoGGen
@@ -27,7 +27,7 @@ def oracle(inp: Input | str) -> Tuple[OracleResult, Optional[Exception]]:
             else (OracleResult.PASSING, None)
         )
     except Exception as e:
-        return (OracleResult.UNDEFINED, e)
+        return OracleResult.UNDEFINED, e
 
 
 grammar: Grammar = {
