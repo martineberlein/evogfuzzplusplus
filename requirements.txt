@@ -6,3 +6,4 @@ jupyter
 pandas
 
 git+https://github.com/martineberlein/debugging-benchmark.git@dev
+git+https://github.com/martineberlein/Tests4Py
