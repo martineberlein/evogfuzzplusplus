@@ -383,9 +383,16 @@ class EvoGGen(EvoGFrame):
         new_inputs.update(self._generate_input_files(probabilistic_grammar))
         new_inputs.update(self._generate_input_files(mutated_grammar))
 
-        for inp in new_inputs:
-            label, _ = self._oracle(inp)
-            inp.oracle = label
+        logging.info("Executing new Inputs.")
+        self.execution_handler.label(new_inputs, self.report)
+
+        new_inputs = set(
+            [inp for inp in new_inputs if inp.oracle != OracleResult.UNDEFINED]
+        )
+        #
+        # for inp in new_inputs:
+        #     label, _ = self._oracle(inp)
+        #     inp.oracle = label
 
         return new_inputs
 
