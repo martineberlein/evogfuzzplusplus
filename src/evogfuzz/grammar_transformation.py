@@ -1,4 +1,5 @@
 import copy
+import logging
 from typing import Set, List
 
 from debugging_framework.types import Grammar
@@ -39,8 +40,11 @@ def get_transformed_grammar(
     # Add dummy rule
     transformed_grammar = _add_dummy_rule(transformed_grammar)
 
-    assert is_valid_grammar(transformed_grammar)
-    return transformed_grammar
+    if is_valid_grammar(transformed_grammar):
+        return transformed_grammar
+    else:
+        logging.info("Transformed Grammar is not valid! Using provided grammar!")
+        return grammar
 
 
 def get_transformed_grammar_from_strings(
@@ -59,8 +63,11 @@ def get_transformed_grammar_from_strings(
     # Add dummy rule
     transformed_grammar = _add_dummy_rule(transformed_grammar)
 
-    assert is_valid_grammar(transformed_grammar)
-    return transformed_grammar
+    if is_valid_grammar(transformed_grammar):
+        return transformed_grammar
+    else:
+        logging.info("Transformed Grammar is not valid! Using provided grammar!")
+        return grammar
 
 
 def _add_dummy_rule(grammar: Grammar):
